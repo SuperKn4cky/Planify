@@ -3,20 +3,26 @@
   "version": "1.0.0",
   "private": true,
   "scripts": {
-    "dev": "nodemon src/index.js"
+    "dev": "nodemon src/index.js",
+    "static": "eslint .",
+    "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,css,scss,json}' '!db/**'"
   },
   "dependencies": {
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
+    "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
+    "@types/express": "^5.0.3",
     "@types/node": "^24.5.2",
     "@types/pg": "^8.15.5",
     "drizzle-kit": "^0.31.4",
+    "prettier": "^3.6.2",
     "tsx": "^4.20.6"
   }
 }
