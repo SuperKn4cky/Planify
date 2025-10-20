@@ -1,4 +1,4 @@
-import express, { Request, Response, NextFunction } from "express";
+import express, { Request, Response } from "express";
 import UserController from "./controllers/user.js";
 
 export default class Routes {
@@ -23,7 +23,7 @@ export default class Routes {
             this.userController.getUserByID.bind(this.userController),
         );
 
-        this.app.use((req: Request, res: Response, next: NextFunction) => {
+        this.app.use((req: Request, res: Response) => {
             res.status(404).json({
                 error: "This resource does not exist.",
                 req: req.originalUrl,

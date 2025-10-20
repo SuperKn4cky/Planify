@@ -1,4 +1,4 @@
-import { Request, Response, NextFunction } from "express";
+import { Request, Response } from "express";
 
 export default class AppError extends Error {
     public statusCode: number;
@@ -11,12 +11,7 @@ export default class AppError extends Error {
     }
 }
 
-export function errorHandler(
-    err: any,
-    req: Request,
-    res: Response,
-    next: NextFunction,
-) {
+export function errorHandler(err: any, req: Request, res: Response) {
     const status = err.status || 500;
     const message = err.message || "An unexpected error occurred";
     res.status(status).json({
