@@ -5,9 +5,9 @@ import { z } from "zod";
 export const userInsertSchema = createInsertSchema(users, {
     email: () =>
         z
-        .email({ message: "Invalid email address" })
-        .min(5, { message: "Email must be at least 5 characters long" })
-        .max(60, { message: "Email must be at most 60 characters long" }),
+            .email({ message: "Invalid email address" })
+            .min(5, { message: "Email must be at least 5 characters long" })
+            .max(60, { message: "Email must be at most 60 characters long" }),
     first_name: (schema) =>
         schema
             .min(2, {
