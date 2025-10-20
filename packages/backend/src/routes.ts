@@ -1,5 +1,5 @@
 import express, { Request, Response, NextFunction } from "express";
-import UserController from "../controllers/user.js";
+import UserController from "./controllers/user.js";
 
 export default class Routes {
     private app: express.Application;

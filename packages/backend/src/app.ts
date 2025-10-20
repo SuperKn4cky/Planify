@@ -4,7 +4,7 @@ import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import startDatabase from "./db/drizzle.js";
 import UserController from "./controllers/user.js";
-import Routes from "./routes/index.js";
+import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import generateJwtSecret from "./config/jwt.js";
 
