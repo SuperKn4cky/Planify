@@ -1,5 +1,5 @@
 {
-  "name": "Planify",
+  "name": "planify",
   "packageManager": "yarn@4.1.1",
   "private": true,
   "workspaces": [
