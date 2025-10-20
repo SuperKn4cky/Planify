@@ -2,8 +2,9 @@
   "name": "backend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "scripts": {
-    "dev": "nodemon src/index.js",
+    "dev": "nodemon --exec tsx src/app.ts",
     "static": "eslint .",
     "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,css,scss,json}' '!db/**'"
@@ -15,7 +16,8 @@
     "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
-    "pg": "^8.16.3"
+    "pg": "^8.16.3",
+    "zod": "^4.1.12"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",
