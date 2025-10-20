@@ -1,17 +1,33 @@
 import express, { Request, Response, NextFunction } from "express";
-import { UserController } from "../controllers/user";
+import UserController from "../controllers/user.js";
 
-const controller = new UserController();
+export default class Routes {
+    private app: express.Application;
+    private userController: UserController;
 
-export function setRoutes(app: express.Application) {
-    app.post("/users", controller.createUser.bind(controller));
-    app.get("/users/:id", controller.getUserByID.bind(controller));
+    constructor(
+        app: express.Application,
+        controllers: { userController: UserController },
+    ) {
+        this.app = app;
+        this.userController = controllers.userController;
+    }
 
-    app.use((req: Request, res: Response, next: NextFunction) => {
-        res.status(404).json({
-            error: "This resource does not exist.",
-            req: req.originalUrl,
+    public register(): void {
+        this.app.post(
+            "/users",
+            this.userController.createUser.bind(this.userController),
+        );
+        this.app.get(
+            "/users/:id",
+            this.userController.getUserByID.bind(this.userController),
+        );
+
+        this.app.use((req: Request, res: Response, next: NextFunction) => {
+            res.status(404).json({
+                error: "This resource does not exist.",
+                req: req.originalUrl,
+            });
         });
-    });
+    }
 }
-
