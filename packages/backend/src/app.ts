@@ -1,14 +1,14 @@
 import express from "express";
 import dotenv from "dotenv";
 import cors from "cors";
-import { corsOptions } from "../config/cors";
-import startDatabase from "./db/drizzle";
-import UserController from "./controllers/user";
-import Routes from "./routes/index";
-import { errorHandler } from "./middlewares/errorHandler";
-import generateJwtSecret from "../config/jwt";
+import { corsOptions } from "./config/cors.js";
+import startDatabase from "./db/drizzle.js";
+import UserController from "./controllers/user.js";
+import Routes from "./routes/index.js";
+import { errorHandler } from "./middlewares/errorHandler.js";
+import generateJwtSecret from "./config/jwt.js";
 
-export class webApp {
+export class WebApp {
     private app: express.Application;
     private port: number;
     private databaseUrl: string;
@@ -23,24 +23,27 @@ export class webApp {
         this.databaseUrl = process.env.DATABASE_URL || "";
         this.frontendUrl = process.env.FRONTEND_URL || "";
         this.nodeEnv = process.env.NODE_ENV || "development";
-        this.jwtSecret = process.env.JWT_SECRET || generateJwtSecret(this.nodeEnv);
+        this.jwtSecret =
+            process.env.JWT_SECRET || generateJwtSecret(this.nodeEnv);
 
         this.app = express();
         this.app.use(cors(corsOptions));
-        this.app.options("*", cors(corsOptions));
+        this.app.options("/*splat", cors(corsOptions));
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
     }
 
-    public async init() : Promise<void> {
+    public async init(): Promise<void> {
         this.db = await startDatabase(this.databaseUrl);
-        const routes = new Routes(this.app, { userController: new UserController(this.db) });
+        const routes = new Routes(this.app, {
+            userController: new UserController(this.db),
+        });
 
         routes.register();
         this.app.use(errorHandler);
     }
 
-    public run() : void {
+    public run(): void {
         this.app.listen(this.port, () => {
             console.log(`Server is running on http://localhost:${this.port}`);
         });
@@ -48,9 +51,9 @@ export class webApp {
 }
 
 async function main() {
-    const web_app = new webApp();
-    await web_app.init();
-    web_app.run();
+    const webApp = new WebApp();
+    await webApp.init();
+    webApp.run();
 }
 
 main().catch((err) => {
