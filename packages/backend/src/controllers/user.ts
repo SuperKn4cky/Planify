@@ -1,18 +1,26 @@
 import { NextFunction, Request, Response } from "express";
-import { User } from "../entities/user";
-import { db } from "../db/drizzle";
-import { users } from "../db/schema";
+import startDatabase from "../db/drizzle.js";
+import { User } from "../entities/user.js";
+import { users } from "../db/schema.js";
 import { eq } from "drizzle-orm";
-import { AppError } from "../middlewares/errorHandler";
+import AppError from "../middlewares/errorHandler.js";
 
-export class UserController {
+type DB = Awaited<ReturnType<typeof startDatabase>>;
+
+export default class UserController {
+    private db: DB;
+
+    constructor(db: DB) {
+        this.db = db;
+    }
+
     public async createUser(req: Request, res: Response, next: NextFunction) {
         try {
             const user = new User(req.body, "insert");
-            await db.insert(users).values({
+            await this.db.insert(users).values({
+                email: user.email,
                 first_name: user.first_name,
                 last_name: user.last_name,
-                email: user.email,
                 password: user.password,
             });
             res.json({
@@ -30,7 +38,7 @@ export class UserController {
             if (!id || isNaN(Number(id))) {
                 throw new AppError("Invalid or missing user id", 400);
             }
-            const result = await db
+            const result = await this.db
                 .select()
                 .from(users)
                 .where(eq(users.id, Number(id)))
