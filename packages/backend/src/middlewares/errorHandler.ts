@@ -1,6 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 
-export class AppError extends Error {
+export default class AppError extends Error {
     public statusCode: number;
     public details?: any;
 
