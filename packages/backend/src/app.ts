@@ -38,12 +38,7 @@ export class WebApp {
             this.jwtSecret = generateJwtSecret(this.nodeEnv);
         }
 
-        try {
-            this.db = await startDatabase(this.databaseUrl);
-        } catch (error) {
-            console.error("Failed to initialize database:", error);
-            throw error;
-        }
+        this.db = await startDatabase(this.databaseUrl);
         const userService = new UserService(this.db);
         const userController = new UserController(userService);
         const routes = new Routes(this.app, { userController });
