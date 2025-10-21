@@ -3,7 +3,7 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import startDatabase, { DB } from "./db/drizzle.js";
-import UserController from "./controllers/user.js";
+import UserController from "./controllers/userController.js";
 import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import generateJwtSecret from "./config/jwt.js";
