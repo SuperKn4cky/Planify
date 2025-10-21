@@ -16,4 +16,6 @@
 node_modules/
 jspm_packages/
 
+# Backend
 packages/backend/.env
+packages/backend/dist/
