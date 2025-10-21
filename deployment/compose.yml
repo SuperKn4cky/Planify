@@ -24,6 +24,8 @@ services:
       - "3000"
     environment:
       - BACKEND_URL=http://localhost:4000
+    depends_on:
+      - back
 
     #nginx:
     #  image: nginx:stable-alpine
