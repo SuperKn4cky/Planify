@@ -26,15 +26,7 @@ COPY --from=builder --chown=appuser:appuser /app/drizzle ./drizzle
 COPY --from=builder --chown=appuser:appuser /app/package.json ./package.json
 COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
 
-ARG DATABASE_URL
-ARG FRONTEND_URL
-ARG JWT_SECRET
-ARG NODE_ENV
-
-ENV DATABASE_URL=${DATABASE_URL}
-ENV FRONTEND_URL=${FRONTEND_URL}
-ENV JWT_SECRET=${JWT_SECRET}
-ENV NODE_ENV=${NODE_ENV}
+ENV NODE_ENV=production
 
 USER appuser
 
