@@ -4,7 +4,7 @@ WORKDIR /app
 
 COPY package.json drizzle.config.ts tsconfig.json ./
 
-RUN corepack enable
+RUN corepack enable && corepack prepare yarn@4.10.3 --activate
 
 COPY src ./src
 
