@@ -1,4 +1,4 @@
-name: Docker Image Back CI
+name: Docker Image Backend CI
 
 on:
   push:
@@ -31,7 +31,6 @@ jobs:
       run: |
         corepack enable
         corepack prepare yarn@4.10.3 --activate
-        yarn --version
 
     - name: Generate version from commit count
       id: version
@@ -51,4 +50,4 @@ jobs:
           --tag ${{ secrets.DOCKER_USERNAME }}/planify_backend:${{ env.TIMESTAMP }}-v${{ env.VERSION }} \
           --tag ${{ secrets.DOCKER_USERNAME }}/planify_backend:latest \
           --push \
-          packages/backend/
+          .
