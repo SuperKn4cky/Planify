@@ -17,9 +17,10 @@ COPY --from=builder /app/packages/frontend/.next ./.next
 COPY --from=builder /app/packages/frontend/public ./public
 COPY --from=builder /app/packages/frontend/package.json ./package.json
 COPY --from=builder /app/packages/frontend/next.config.ts ./next.config.ts
+COPY --from=builder /app/node_modules ./node_modules
 
 ENV NODE_ENV=production
 
 EXPOSE 3000
 
-CMD ["next", "start"]
+CMD ["node_modules/.bin/next", "start"]
