@@ -1,28 +1,20 @@
 import { NextFunction, Request, Response } from "express";
-import startDatabase from "../db/drizzle.js";
-import { User } from "../entities/user.js";
-import { users } from "../db/schema.js";
-import { eq } from "drizzle-orm";
+import { NewUser, User } from "../entities/user.js";
 import AppError from "../middlewares/errorHandler.js";
-
-type DB = Awaited<ReturnType<typeof startDatabase>>;
+import UserService from "../services/userService.js";
 
 export default class UserController {
-    private db: DB;
+    private userService: UserService;
 
-    constructor(db: DB) {
-        this.db = db;
+    constructor(userService: UserService) {
+        this.userService = userService;
     }
 
     public async createUser(req: Request, res: Response, next: NextFunction) {
         try {
-            const user = new User(req.body, "insert");
-            await this.db.insert(users).values({
-                email: user.email,
-                first_name: user.first_name,
-                last_name: user.last_name,
-                password: user.password,
-            });
+            const newUser = new NewUser(req.body);
+            const row = await this.userService.createUser(newUser);
+            const user = new User(row);
             res.json({
                 message: "User created successfully",
                 data: user.toPublic(),
@@ -38,15 +30,8 @@ export default class UserController {
             if (!id || isNaN(Number(id))) {
                 throw new AppError("Invalid or missing user id", 400);
             }
-            const result = await this.db
-                .select()
-                .from(users)
-                .where(eq(users.id, Number(id)))
-                .limit(1);
-            if (result.length === 0) {
-                throw new AppError("User not found", 404);
-            }
-            const user = new User(result[0], "select");
+            const row = await this.userService.getUserByID(Number(id));
+            const user = new User(row);
             res.json(user.toPublic());
         } catch (error) {
             next(error);
