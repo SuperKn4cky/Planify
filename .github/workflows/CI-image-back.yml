@@ -51,4 +51,4 @@ jobs:
           --tag ${{ secrets.DOCKER_USERNAME }}/planify_backend:${{ env.TIMESTAMP }}-v${{ env.VERSION }} \
           --tag ${{ secrets.DOCKER_USERNAME }}/planify_backend:latest \
           --push \
-          backend/
+          packages/backend/
