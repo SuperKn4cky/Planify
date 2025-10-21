@@ -48,7 +48,7 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
         await migrate(db, { migrationsFolder: "drizzle" });
         console.log("Database migration successful.");
     } catch (error: unknown) {
-        if ((error as { code?: string }).code === "42710") {
+        if ((error as any).cause?.code === "42P07") {
             console.log("Migration skipped: already exists.");
         } else {
             console.error("Error during database migration:", error);
