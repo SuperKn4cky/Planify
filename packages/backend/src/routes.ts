@@ -23,6 +23,11 @@ export default class Routes {
             this.userController.getUserByID.bind(this.userController),
         );
 
+        this.app.get("/health", (req: Request, res: Response) => {
+            res.status(200).json({ status: "OK" });
+        });
+
+        // 404 handler
         this.app.use((req: Request, res: Response) => {
             res.status(404).json({
                 error: "This resource does not exist.",
