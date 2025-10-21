@@ -1,17 +1,15 @@
 FROM node:22.13.1-slim AS builder
-
 WORKDIR /app
 
-COPY package.json drizzle.config.ts tsconfig.json ./
+COPY package.json yarn.lock ./
+COPY packages ./packages
 
-RUN corepack enable && corepack prepare yarn@4.10.3 --activate
-
-COPY src ./src
-
-RUN yarn config set nodeLinker node-modules \
+RUN corepack enable && corepack prepare yarn@4.10.3 --activate \
+    && yarn config set nodeLinker node-modules \
+    && yarn install --immutable \
     && yarn workspaces focus --all \
-    && yarn drizzle-kit generate \
-    && yarn build
+    && yarn workspace backend drizzle-kit generate \
+    && yarn workspace backend build
 
 FROM node:22.13.1-slim
 
@@ -21,10 +19,9 @@ WORKDIR /app
 
 RUN chown -R appuser:appuser /app
 
-COPY --from=builder --chown=appuser:appuser /app/dist ./dist
-COPY --from=builder --chown=appuser:appuser /app/drizzle ./drizzle
-COPY --from=builder --chown=appuser:appuser /app/package.json ./package.json
-COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
+COPY --from=builder --chown=appuser:appuser /app/packages/backend/dist ./dist
+COPY --from=builder --chown=appuser:appuser /app/packages/backend/drizzle ./drizzle
+COPY --from=builder --chown=appuser:appuser /app/packages/backend/package.json ./package.json
 
 ENV NODE_ENV=production
 
