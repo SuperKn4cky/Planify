@@ -19,7 +19,7 @@ export const userSchema = z.object({
     revocation_timestamp: z.date().optional(),
 });
 
-export const newUserSchema = userSchema.extend({
+export const UserWithPasswordSchema = userSchema.extend({
     password: z
         .string()
         .min(12, { message: "Password must be at least 12 characters long" })
@@ -52,11 +52,11 @@ export class User {
     }
 }
 
-export class NewUser extends User {
+export class UserWithPassword extends User {
     password: string;
 
     constructor(data: unknown) {
-        const result = newUserSchema.safeParse(data);
+        const result = UserWithPasswordSchema.safeParse(data);
         if (!result.success) throw new Error("Validation failed");
         super(result.data);
         this.password = result.data.password;

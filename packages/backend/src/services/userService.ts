@@ -1,6 +1,6 @@
 import { eq } from "drizzle-orm";
 import { users } from "../db/schema.js";
-import { NewUser } from "../entities/user.js";
+import { UserWithPassword } from "../entities/userEntite.js";
 import type { DB } from "../db/drizzle.js";
 
 export default class UserService {
@@ -10,7 +10,7 @@ export default class UserService {
         this.db = db;
     }
 
-    async createUser(user: NewUser): Promise<any> {
+    public async createUser(user: UserWithPassword): Promise<any> {
         const result = await this.db.insert(users).values(user).returning();
         if (!result) {
             throw new Error("User creation failed");
@@ -18,7 +18,7 @@ export default class UserService {
         return result;
     }
 
-    async getUserByID(id: number): Promise<any> {
+    public async getUserByID(id: number): Promise<any> {
         const result = await this.db
             .select()
             .from(users)
