@@ -22,13 +22,13 @@ export class WebApp {
         dotenv.config();
         this.port = parseInt(process.env.PORT || "4000", 10);
         this.databaseUrl = process.env.DATABASE_URL || undefined;
-        this.frontendUrl = process.env.FRONTEND_URL || undefined;
+        this.frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
         this.app = express();
-        this.app.use(cors(corsOptions));
-        this.app.options("/*splat", cors(corsOptions));
+        this.app.use(cors(corsOptions(this.frontendUrl)));
+        this.app.options("/*splat", cors(corsOptions(this.frontendUrl)));
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
     }
