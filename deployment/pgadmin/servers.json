@@ -1,0 +1,12 @@
+{
+  "Servers": {
+    "1": {
+      "Name": "LocalDB",
+      "Group": "Servers",
+      "Host": "db",
+      "Port": 5432,
+      "Username": "root",
+      "SSLMode": "prefer"
+    }
+  }
+}
