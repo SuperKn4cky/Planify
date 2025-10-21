@@ -4,9 +4,16 @@ services:
     image: superknacky/planify_backend:latest
     container_name: Planify-back
     expose:
-      - "3001"
+      - "4000"
     environment:
-      - NODE_ENV=production
+      - JWT_SECRET=
+      - DATABASE_URL=
+      - FRONTEND_URL=http://localhost:3000 # use ',' for separated list of allowed frontend URLs
+      - SMTP_HOST=
+      - SMTP_PORT=
+      - SMTP_SECURE=
+      - SMTP_USER=
+      - SMTP_PASS=
     depends_on:
       - db
 
@@ -16,7 +23,7 @@ services:
     expose:
       - "3000"
     environment:
-      - NODE_ENV=production
+      - BACKEND_URL=http://localhost:4000
 
     #nginx:
     #  image: nginx:stable-alpine
