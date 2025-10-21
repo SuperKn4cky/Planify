@@ -1,6 +1,6 @@
 {
   "name": "planify",
-  "packageManager": "yarn@4.1.1",
+  "packageManager": "yarn@4.10.3",
   "private": true,
   "workspaces": [
     "packages/*"
