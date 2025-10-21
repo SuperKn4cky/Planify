@@ -19,7 +19,7 @@ export class WebApp {
 
     constructor() {
         dotenv.config();
-        this.port = parseInt(process.env.PORT || "3000", 10);
+        this.port = parseInt(process.env.PORT || "4000", 10);
         this.databaseUrl = process.env.DATABASE_URL || "";
         this.frontendUrl = process.env.FRONTEND_URL || "";
         this.nodeEnv = process.env.NODE_ENV || "development";
