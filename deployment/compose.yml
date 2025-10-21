@@ -1,0 +1,64 @@
+services:
+
+  back:
+    image: superknacky/planify_backend:latest
+    container_name: Planify-back
+    expose:
+      - "3001"
+    environment:
+      - NODE_ENV=production
+    depends_on:
+      - db
+
+  front:
+    image: superknacky/planify_frontend:latest
+    container_name: Planify-front
+    expose:
+      - "3000"
+    environment:
+      - NODE_ENV=production
+
+    #nginx:
+    #  image: nginx:stable-alpine
+    #  container_name: Planify-nginx
+    #  ports:
+    #    - "80:80"
+    #    - "443:443"
+    #  volumes:
+    #    - ./nginx/conf:/etc/nginx/conf.d
+    #    - ./nginx/ssl:/etc/nginx/ssl
+    #  depends_on:
+    #    - front
+    #    - back
+
+  db:
+    image: postgres:14.15-alpine3.21
+    container_name: Planify-postgres
+    restart: always
+    environment:
+      POSTGRES_DB: Librario
+      POSTGRES_USER: root
+      POSTGRES_PASSWORD: root
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: Planify-pgadmin
+    restart: always
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@example.com
+      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_CONFIG_SERVER_MODE: 'False'
+      PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
+    ports:
+      - "8080:80"
+    volumes:
+      - ./pgadmin/servers.json:/pgadmin4/servers.json
+    depends_on:
+      - db
+
+volumes:
+  pgdata:
