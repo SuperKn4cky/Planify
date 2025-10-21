@@ -1,16 +1,12 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
 
-export let db: ReturnType<typeof drizzle>;
-export let pool: Pool;
+export type DB = ReturnType<typeof drizzle>;
 
-export default async function startDatabase(
-    databaseUrl?: string,
-): Promise<ReturnType<typeof drizzle>> {
-    let DATABASE_URL = databaseUrl || null;
+export default async function startDatabase(databaseUrl?: string): Promise<DB> {
+    let db: DB | undefined;
 
-    if (!DATABASE_URL) {
+    if (!databaseUrl) {
         console.error("DATABASE_URL is not defined in environment variables.");
         throw new Error(
             "DATABASE_URL is not defined in environment variables.",
@@ -23,8 +19,7 @@ export default async function startDatabase(
 
     while (!connected && attempts < maxAttempts) {
         try {
-            pool = new Pool({ connectionString: DATABASE_URL });
-            db = drizzle(pool);
+            db = drizzle(databaseUrl);
             await db.execute("select 1");
             connected = true;
             console.log("Connected to the database.");
@@ -42,6 +37,11 @@ export default async function startDatabase(
             );
             await new Promise((resolve) => setTimeout(resolve, 2000));
         }
+    }
+
+    if (!db) {
+        console.error("Database connection was not established.");
+        throw new Error("Database connection was not established.");
     }
 
     try {
