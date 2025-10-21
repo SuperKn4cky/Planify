@@ -11,13 +11,13 @@ export default class AppError extends Error {
     }
 }
 
-export function errorHandler(err: any, req: Request, res: Response) {
-    const status = err.status || 500;
-    const message = err.message || "An unexpected error occurred";
+export function errorHandler(error: any, req: Request, res: Response) {
+    const status = error.status || 500;
+    const message = error.message || "An unexpected error occurred";
     res.status(status).json({
         error: {
             message,
-            details: err.details || undefined,
+            details: error.details || undefined,
         },
     });
 }
