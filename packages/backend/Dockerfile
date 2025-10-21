@@ -11,7 +11,7 @@ RUN corepack enable && corepack prepare yarn@4.10.3 --activate \
     && yarn workspace backend drizzle-kit generate \
     && yarn workspace backend build
 
-FROM node:22.13.1-slim
+FROM node:22.13.1-slim AS runner
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
@@ -22,6 +22,8 @@ RUN chown -R appuser:appuser /app
 COPY --from=builder --chown=appuser:appuser /app/packages/backend/dist ./dist
 COPY --from=builder --chown=appuser:appuser /app/packages/backend/drizzle ./drizzle
 COPY --from=builder --chown=appuser:appuser /app/packages/backend/package.json ./package.json
+COPY --from=builder --chown=appuser:appuser /app/packages/backend/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
 
 ENV NODE_ENV=production
 
@@ -29,4 +31,4 @@ USER appuser
 
 EXPOSE 4000
 
-CMD ["node", "./dist/src/app.js"]
+ENTRYPOINT ["node", "./dist/app.js"]
