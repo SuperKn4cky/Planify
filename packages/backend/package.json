@@ -5,6 +5,7 @@
   "type": "module",
   "scripts": {
     "build": "yarn tsc",
+    "start": "node dist/src/",
     "dev": "nodemon --exec tsx src/app.ts",
     "static": "eslint .",
     "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
@@ -14,7 +15,6 @@
     "cors": "^2.8.5",
     "dotenv": "^17.2.2",
     "drizzle-orm": "^0.44.5",
-    "drizzle-zod": "^0.8.3",
     "express": "^5.1.0",
     "nodemon": "^3.1.10",
     "pg": "^8.16.3",
@@ -31,6 +31,7 @@
     "eslint-config-prettier": "^10.1.8",
     "eslint-plugin-prettier": "^5.5.4",
     "prettier": "^3.6.2",
-    "tsx": "^4.20.6"
+    "tsx": "^4.20.6",
+    "typescript": "^5.9.3"
   }
 }
