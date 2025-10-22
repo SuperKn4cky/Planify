@@ -13,6 +13,11 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
         );
     }
 
+    if (typeof databaseUrl === "string" && databaseUrl.includes("db")) {
+        databaseUrl = databaseUrl.replace("db", "localhost");
+    }
+
+
     let connected = false;
     let attempts = 0;
     const maxAttempts = 5;
