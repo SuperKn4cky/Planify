@@ -13,7 +13,7 @@ export default class Routes {
         this.userController = controllers.userController;
     }
 
-    public register(): void {
+    public async register(): Promise<void> {
         this.app.post(
             "/users",
             this.userController.createUser.bind(this.userController),

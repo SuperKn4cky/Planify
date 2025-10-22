@@ -46,7 +46,7 @@ export class WebApp {
         const userController = new UserController(userService);
         const routes = new Routes(this.app, { userController });
 
-        routes.register();
+        await routes.register();
         this.app.use(errorHandler);
     }
 
