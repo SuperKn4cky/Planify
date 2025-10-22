@@ -6,8 +6,8 @@
     "packages/*"
   ],
   "scripts": {
-    "dev:frontend": "yarn workspace frontend dev",
-    "dev:backend": "yarn workspace backend dev",
+    "dev:front": "yarn workspace frontend dev",
+    "dev:back": "yarn workspace backend dev",
     "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\""
   },
   "devDependencies": {
