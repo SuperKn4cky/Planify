@@ -20,7 +20,7 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
     while (!connected && attempts < maxAttempts) {
         try {
             db = drizzle(databaseUrl);
-            //await db.execute("select 1");
+            await db.execute("select 1");
             connected = true;
             console.log("Connected to the database.");
         } catch (error) {
