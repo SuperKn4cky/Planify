@@ -1,4 +1,5 @@
 import { z } from "zod";
+import AppError from "../middlewares/errorHandler.js";
 
 export const userSchema = z.object({
     id: z.number().optional(),
@@ -35,7 +36,9 @@ export class User {
 
     constructor(data: unknown) {
         const result = userSchema.safeParse(data);
-        if (!result.success) throw new Error("Validation failed");
+        if (!result.success) {
+            throw result.error;
+        }
         this.id = result.data.id;
         this.email = result.data.email;
         this.first_name = result.data.first_name;
@@ -57,7 +60,9 @@ export class UserWithPassword extends User {
 
     constructor(data: unknown) {
         const result = UserWithPasswordSchema.safeParse(data);
-        if (!result.success) throw new Error("Validation failed");
+        if (!result.success) {
+            throw result.error;
+        }
         super(result.data);
         this.password = result.data.password;
     }
