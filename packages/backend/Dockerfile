@@ -12,22 +12,15 @@ RUN corepack enable && corepack prepare yarn@4.10.3 --activate \
     && yarn workspace backend build
 
 FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runner
-
-RUN groupadd -r appuser && useradd -r -g appuser appuser
-
 WORKDIR /app
 
-RUN chown -R appuser:appuser /app
-
-COPY --from=builder --chown=appuser:appuser /app/packages/backend/dist ./dist
-COPY --from=builder --chown=appuser:appuser /app/packages/backend/drizzle ./drizzle
-COPY --from=builder --chown=appuser:appuser /app/packages/backend/package.json ./package.json
-COPY --from=builder --chown=appuser:appuser /app/packages/backend/drizzle.config.ts ./drizzle.config.ts
-COPY --from=builder --chown=appuser:appuser /app/node_modules ./node_modules
+COPY --from=builder /app/packages/backend/dist ./dist
+COPY --from=builder /app/packages/backend/drizzle ./drizzle
+COPY --from=builder /app/packages/backend/package.json ./package.json
+COPY --from=builder /app/packages/backend/drizzle.config.ts ./drizzle.config.ts
+COPY --from=builder /app/node_modules ./node_modules
 
 ENV NODE_ENV=production
-
-USER appuser
 
 EXPOSE 4000
 
