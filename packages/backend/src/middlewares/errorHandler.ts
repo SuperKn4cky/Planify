@@ -13,7 +13,6 @@ export default class AppError extends Error {
 }
 
 export function errorHandler(error: any, req: Request, res: Response, _next: Function) {
-    console.error("Error occurred:", error);
     if (error instanceof ZodError) {
         return res.status(422).json({
             error: {
