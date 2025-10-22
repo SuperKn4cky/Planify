@@ -24,4 +24,4 @@ ENV NODE_ENV=production
 
 EXPOSE 4000
 
-ENTRYPOINT ["node", "./dist/app.js"]
+CMD ["node", "./dist/app.js"]
