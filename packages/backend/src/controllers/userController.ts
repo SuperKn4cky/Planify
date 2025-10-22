@@ -2,6 +2,7 @@ import { NextFunction, Request, Response } from "express";
 import { UserWithPassword, User } from "../entities/userEntite.js";
 import AppError from "../middlewares/errorHandler.js";
 import UserService from "../services/userService.js";
+import { DrizzleQueryError } from "drizzle-orm";
 
 export default class UserController {
     private userService: UserService;
@@ -20,6 +21,9 @@ export default class UserController {
                 data: user.toPublic(),
             });
         } catch (error) {
+            if (error instanceof DrizzleQueryError && (error as any).cause.code) {
+                return next(new AppError("This email is already in use.", 400));
+            }
             next(error);
         }
     }
