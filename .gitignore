@@ -18,6 +18,7 @@ jspm_packages/
 
 # Backend
 packages/backend/dist/
+packages/backend/drizzle/
 
 # Env files
 .env
