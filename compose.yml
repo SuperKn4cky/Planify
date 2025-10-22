@@ -6,14 +6,14 @@ services:
     expose:
       - "4000"
     environment:
-      - JWT_SECRET=
-      - DATABASE_URL=
-      - FRONTEND_URL=http://localhost:3000 # use ',' for separated list of allowed frontend URLs
-      - SMTP_HOST=
-      - SMTP_PORT=
-      - SMTP_SECURE=
-      - SMTP_USER=
-      - SMTP_PASS=
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL=${DATABASE_URL}
+      - FRONTEND_URL=${FRONTEND_URL} # use ',' in .env file for separated list of allowed frontend URLs
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
     depends_on:
       - db
 
@@ -22,8 +22,6 @@ services:
     container_name: Planify-front
     expose:
       - "3000"
-    environment:
-      - BACKEND_URL=http://localhost:4000
     depends_on:
       - back
 
@@ -45,14 +43,12 @@ services:
     container_name: Planify-pgadmin
     restart: always
     environment:
-      PGADMIN_DEFAULT_EMAIL: admin@example.com
-      PGADMIN_DEFAULT_PASSWORD: admin
+      PGADMIN_DEFAULT_EMAIL: ${PGADMIN_DEFAULT_EMAIL}
+      PGADMIN_DEFAULT_PASSWORD: ${PGADMIN_DEFAULT_PASSWORD}
       PGADMIN_CONFIG_SERVER_MODE: 'False'
       PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED: 'False'
     ports:
       - "8080:80"
-    volumes:
-      - ./pgadmin/servers.json:/pgadmin4/servers.json
     depends_on:
       - db
 
