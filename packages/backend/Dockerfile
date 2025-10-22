@@ -11,7 +11,7 @@ RUN corepack enable && corepack prepare yarn@4.10.3 --activate \
     && yarn workspace backend drizzle-kit generate \
     && yarn workspace backend build
 
-FROM node:22.13.1-slim AS runner
+FROM gcr.io/distroless/nodejs22-debian12:nonroot AS runner
 
 RUN groupadd -r appuser && useradd -r -g appuser appuser
 
