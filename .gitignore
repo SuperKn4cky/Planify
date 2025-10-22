@@ -20,4 +20,4 @@ jspm_packages/
 packages/backend/dist/
 
 
-.env
+.env.local

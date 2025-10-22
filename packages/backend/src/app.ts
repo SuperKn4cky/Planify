@@ -23,7 +23,7 @@ export class WebApp {
     constructor() {
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
-        dotenv.config({ path: path.resolve(__dirname, '../../../.env') });
+        dotenv.config({ path: path.resolve(__dirname, '../../../.env.local') });
         this.port = parseInt(process.env.PORT || "4000", 10);
         this.databaseUrl = process.env.DATABASE_URL || undefined;
         this.frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
