@@ -19,5 +19,5 @@ jspm_packages/
 # Backend
 packages/backend/dist/
 
-
-.env.local
+# Env files
+.env
