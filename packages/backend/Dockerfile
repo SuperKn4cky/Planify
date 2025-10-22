@@ -24,4 +24,4 @@ ENV NODE_ENV=production
 
 EXPOSE 4000
 
-CMD ["node", "./dist/app.js"]
+CMD ["./dist/app.js"]
