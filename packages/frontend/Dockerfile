@@ -4,6 +4,9 @@ WORKDIR /app
 COPY package.json yarn.lock ./
 COPY packages ./packages
 
+ARG BACKEND_URL
+ENV BACKEND_URL=${BACKEND_URL}
+
 RUN corepack enable && corepack prepare yarn@4.10.3 --activate \
     && yarn config set nodeLinker node-modules \
     && yarn install --immutable \
