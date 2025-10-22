@@ -1,3 +1,4 @@
+version: "3.9"
 services:
 
   back:
@@ -26,19 +27,6 @@ services:
       - BACKEND_URL=http://localhost:4000
     depends_on:
       - back
-
-    #nginx:
-    #  image: nginx:stable-alpine
-    #  container_name: Planify-nginx
-    #  ports:
-    #    - "80:80"
-    #    - "443:443"
-    #  volumes:
-    #    - ./nginx/conf:/etc/nginx/conf.d
-    #    - ./nginx/ssl:/etc/nginx/ssl
-    #  depends_on:
-    #    - front
-    #    - back
 
   db:
     image: postgres:14.15-alpine3.21
