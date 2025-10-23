@@ -17,7 +17,6 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
         databaseUrl = databaseUrl.replace("db", "localhost");
     }
 
-
     let connected = false;
     let attempts = 0;
     const maxAttempts = 5;

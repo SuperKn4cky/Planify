@@ -1,6 +1,8 @@
 import cors from "cors";
 
-export const corsOptions = (frontendUrl?: string | string[]): cors.CorsOptions => {
+export const corsOptions = (
+    frontendUrl?: string | string[],
+): cors.CorsOptions => {
     const allowedOrigins = Array.isArray(frontendUrl)
         ? frontendUrl.map((u) => u.trim()).filter(Boolean)
         : (frontendUrl || "")

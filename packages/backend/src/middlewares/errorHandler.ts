@@ -1,18 +1,23 @@
-import { Request, Response } from "express";
+import { Request, Response, NextFunction } from "express";
 import { ZodError } from "zod";
 
 export default class AppError extends Error {
     public statusCode: number;
     public details?: any;
 
-    constructor(message: string, statusCode: number, details?: any) {
+    public constructor(message: string, statusCode: number, details?: any) {
         super(message);
         this.statusCode = statusCode;
         this.details = details;
     }
 }
 
-export function errorHandler(error: any, req: Request, res: Response, _next: Function) {
+export function errorHandler(
+    error: any,
+    req: Request,
+    res: Response,
+    _next: NextFunction,
+) {
     if (error instanceof ZodError) {
         return res.status(422).json({
             error: {
