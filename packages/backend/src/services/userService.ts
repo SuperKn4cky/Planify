@@ -9,10 +9,12 @@ import argon2 from "argon2";
 
 export default class UserService {
     private db: DB;
-    private authService: AuthService;
+    private authService!: AuthService;
 
-    public constructor(db: DB, authService: AuthService) {
+    public constructor(db: DB) {
         this.db = db;
+    }
+    public setAuthService(authService: AuthService): void {
         this.authService = authService;
     }
 

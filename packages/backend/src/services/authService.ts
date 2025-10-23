@@ -1,10 +1,15 @@
 import { SignJWT, jwtVerify, JWTPayload } from "jose";
+import UserService from "./userService.js";
 
 export default class AuthService {
     private secret: Uint8Array;
+    private userService!: UserService;
 
     public constructor(secret: string) {
         this.secret = new TextEncoder().encode(secret);
+    }
+    public setUserService(userService: UserService): void {
+        this.userService = userService;
     }
 
     public async generateToken(

@@ -20,9 +20,17 @@ export default class Routes {
         this.app = app;
         this.db = db;
         this.jwtSecret = jwtSecret;
+
+        // Instancier les services sans leurs dépendances circulaires
         this.authService = new AuthService(this.jwtSecret);
+        this.userService = new UserService(this.db);
+
+        // Injecter les dépendances mutuelles
+        this.authService.setUserService(this.userService);
+        this.userService.setAuthService(this.authService);
+
         this.authMiddleware = new AuthMiddleware(this.authService);
-        this.userService = new UserService(this.db, this.authService);
+
         this.userController = new UserController(this.userService);
     }
 
@@ -53,6 +61,12 @@ export default class Routes {
         this.app.post(
             "/login",
             this.userController.loginUser.bind(this.userController),
+        );
+
+        this.app.post(
+            "/logout",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.userController.logoutUser.bind(this.userController),
         );
 
         this.app.get(
