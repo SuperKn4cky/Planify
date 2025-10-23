@@ -1,32 +1,50 @@
 import { Request, Response, NextFunction } from "express";
-import { SignJWT, jwtVerify } from "jose";
+import AuthService from "../services/authService.js";
 
-export class AuthMiddleware {
-    private secret: Uint8Array;
+export default class AuthMiddleware {
+    private authService: AuthService;
 
-    constructor(secret: string) {
-        this.secret = new TextEncoder().encode(secret);
+    constructor(authService: AuthService) {
+        this.authService = authService;
     }
 
-    public generateToken(user_id: number, expiresIn: string | number): Promise<string> {
-        return new SignJWT({ user_id })
-            .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-            .setIssuedAt()
-            .setExpirationTime(expiresIn)
-            .sign(this.secret);
-    }
-
-    public isAuthenticated(req: Request, res: Response, next: NextFunction) {
+    public async isAuthenticated(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
         const authHeader = req.headers.authorization;
-        if (!authHeader || !authHeader.startsWith("Bearer ")) {
-            return res.status(401).json({ error: "Unauthorized" });
+
+        if (!authHeader?.startsWith("Bearer ")) {
+            res.status(401).json({ error: "Unauthorized" });
+            return;
         }
-        
+
         const token = authHeader.split(" ")[1];
 
-        jwtVerify(token, this.secret)
-            .then(() => next())
-            .catch(() => res.status(401).json({ error: "Invalid token" }));
+        try {
+            const payload = await this.authService.verifyToken(token);
+            req.user = { id: payload.user_id as number };
+            next();
+        } catch {
+            res.status(401).json({ error: "Invalid or expired token" });
+        }
     }
 
+    public async authorizeUserId(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        const paramUserId = req.params.id;
+
+        const loggedUserId = req.user?.id?.toString();
+
+        if (paramUserId !== loggedUserId) {
+            res.status(403).json({ error: "Forbidden: Access denied" });
+            return;
+        }
+
+        next();
+    }
 }
