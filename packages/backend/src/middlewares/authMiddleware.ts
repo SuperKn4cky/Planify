@@ -25,6 +25,13 @@ export default class AuthMiddleware {
         try {
             const payload = await this.authService.verifyToken(token);
             req.user = { id: payload.user_id as number };
+
+            const isRevoked = await this.authService.verifyRevocation(payload);
+            if (isRevoked) {
+                res.status(401).json({ error: "Token has been revoked" });
+                return;
+            }
+
             next();
         } catch {
             res.status(401).json({ error: "Invalid or expired token" });

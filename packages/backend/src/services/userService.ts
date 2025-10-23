@@ -80,6 +80,38 @@ export default class UserService {
         }
     }
 
+    public async revokeTokens(user_id: number): Promise<void> {
+        try {
+            const now = new Date();
+            await this.db
+                .update(users)
+                .set({ revocation_timestamp: now })
+                .where(eq(users.id, user_id));
+        } catch {
+            throw new AppError("Failed to revoke tokens", 500);
+        }
+    }
+
+    public async getRevocationTimestamp(user_id: number): Promise<Date> {
+        try {
+            const result = await this.db
+                .select({
+                    revocation_timestamp: users.revocation_timestamp,
+                })
+                .from(users)
+                .where(eq(users.id, user_id))
+                .limit(1);
+
+            if (result.length === 0) {
+                throw new AppError("User not found", 404);
+            }
+
+            return new Date(result[0].revocation_timestamp);
+        } catch {
+            throw new AppError("Failed to retrieve revocation timestamp", 500);
+        }
+    }
+
     public async getUserByID(id: number): Promise<User> {
         try {
             const result = await this.db

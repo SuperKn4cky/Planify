@@ -27,4 +27,25 @@ export default class AuthService {
         const { payload } = await jwtVerify(token, this.secret);
         return payload;
     }
+
+    public async verifyRevocation(payload: JWTPayload): Promise<boolean> {
+        if (
+            !payload ||
+            typeof payload.iat !== "number" ||
+            typeof payload.user_id !== "number"
+        ) {
+            throw new Error("Invalid payload.");
+        }
+        const revocationTimestamp =
+            await this.userService.getRevocationTimestamp(payload.user_id);
+        const tokenCreationTime = new Date(payload.iat * 1000);
+        if (
+            revocationTimestamp &&
+            new Date(revocationTimestamp) > tokenCreationTime
+        ) {
+            return true;
+        }
+
+        return false;
+    }
 }
