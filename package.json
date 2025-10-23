@@ -1,16 +1,22 @@
 {
-  "name": "planify",
-  "packageManager": "yarn@4.10.3",
-  "private": true,
-  "workspaces": [
-    "packages/*"
-  ],
-  "scripts": {
-    "dev:front": "yarn workspace frontend dev",
-    "dev:back": "yarn workspace backend dev",
-    "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\""
-  },
-  "devDependencies": {
-    "concurrently": "^9.2.1"
-  }
+    "name": "planify",
+    "packageManager": "yarn@4.10.3",
+    "private": true,
+    "workspaces": [
+        "packages/*"
+    ],
+    "scripts": {
+        "dev:front": "yarn workspace frontend dev",
+        "dev:back": "yarn workspace backend dev",
+        "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
+        "prepare": "husky"
+    },
+    "devDependencies": {
+        "concurrently": "^9.2.1",
+        "husky": "^9.1.7",
+        "lint-staged": "^16.2.6"
+    },
+    "lint-staged": {
+        "*.{js,jsx,ts,tsx,vue,css,scss,md,json,yml,yaml}": "prettier --write"
+    }
 }
