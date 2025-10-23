@@ -48,6 +48,24 @@ export default class UserController {
         }
     }
 
+    public async logoutUser(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user || !req.user.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+            await this.userService.revokeTokens(req.user.id);
+            res.json({
+                message: "Logout successful",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public async getUserByID(
         req: Request,
         res: Response,
