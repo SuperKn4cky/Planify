@@ -1,5 +1,4 @@
 import { z } from "zod";
-import AppError from "../middlewares/errorHandler.js";
 
 export const userSchema = z.object({
     id: z.number().optional(),
@@ -24,17 +23,28 @@ export const UserWithPasswordSchema = userSchema.extend({
     password: z
         .string()
         .min(12, { message: "Password must be at least 12 characters long" })
-        .max(255, { message: "Password must be at most 255 characters long" }),
+        .max(255, { message: "Password must be at most 255 characters long" })
+        .regex(/[A-Z]/, {
+            message: "Password must contain at least one uppercase letter",
+        })
+        .regex(/[a-z]/, {
+            message: "Password must contain at least one lowercase letter",
+        })
+        .regex(/\d/, { message: "Password must contain at least one digit" })
+        .regex(/[@$!%*?&]/, {
+            message:
+                "Password must contain at least one special character (@$!%*?&)",
+        }),
 });
 
 export class User {
-    id?: number;
-    email!: string;
-    first_name!: string;
-    last_name!: string;
-    revocation_timestamp?: Date;
+    public id?: number;
+    public email!: string;
+    public first_name!: string;
+    public last_name!: string;
+    public revocation_timestamp?: Date;
 
-    constructor(data: unknown) {
+    public constructor(data: unknown) {
         const result = userSchema.safeParse(data);
         if (!result.success) {
             throw result.error;
@@ -56,9 +66,9 @@ export class User {
 }
 
 export class UserWithPassword extends User {
-    password: string;
+    public password: string;
 
-    constructor(data: unknown) {
+    public constructor(data: unknown) {
         const result = UserWithPasswordSchema.safeParse(data);
         if (!result.success) {
             throw result.error;
