@@ -18,7 +18,7 @@ export default class UserController {
         try {
             const newUser = new UserWithPassword(req.body);
             const user = await this.userService.createUser(newUser);
-            res.json({
+            res.status(201).json({
                 message: "User created successfully",
                 data: user.toPublic(),
                 token: user.token,
@@ -39,7 +39,7 @@ export default class UserController {
                 throw new AppError("Email and password are required", 400);
             }
             const token = await this.userService.loginUser(email, password);
-            res.json({
+            res.status(200).json({
                 message: "Login successful",
                 token: token,
             });
@@ -58,7 +58,7 @@ export default class UserController {
                 throw new AppError("User not authenticated", 401);
             }
             await this.userService.revokeTokens(req.user.id);
-            res.json({
+            res.status(200).json({
                 message: "Logout successful",
             });
         } catch (error) {
@@ -77,7 +77,7 @@ export default class UserController {
                 throw new AppError("Invalid or missing user id", 400);
             }
             const user = await this.userService.getUserByID(Number(id));
-            res.json(user.toPublic());
+            res.status(200).json(user.toPublic());
         } catch (error) {
             next(error);
         }
