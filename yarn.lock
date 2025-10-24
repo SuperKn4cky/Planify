@@ -2877,6 +2877,7 @@ __metadata:
     "@types/supertest": "npm:^6.0.3"
     argon2: "npm:^0.44.0"
     cors: "npm:^2.8.5"
+    cross-env: "npm:^10.1.0"
     dotenv: "npm:^17.2.3"
     drizzle-kit: "npm:^0.31.5"
     drizzle-orm: "npm:^0.44.6"
@@ -3331,7 +3332,7 @@ __metadata:
   languageName: node
   linkType: hard
 
-"cross-env@npm:^10.0.0":
+"cross-env@npm:^10.0.0, cross-env@npm:^10.1.0":
   version: 10.1.0
   resolution: "cross-env@npm:10.1.0"
   dependencies:
