@@ -35,7 +35,7 @@ export default class UserService {
             }
 
             const token = await this.authService.generateToken(
-                insertedUser[0].id,
+                { user_id: insertedUser[0].id },
                 "7d",
             );
             const userInstance = new User(insertedUser[0]);
@@ -73,7 +73,10 @@ export default class UserService {
                 throw new AppError("Invalid email or password", 401);
             }
 
-            const token = await this.authService.generateToken(user.id, "7d");
+            const token = await this.authService.generateToken(
+                { user_id: user.id },
+                "7d",
+            );
             return token;
         } catch {
             throw new AppError("Login failed", 500);
