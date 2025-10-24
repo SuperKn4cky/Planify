@@ -51,6 +51,18 @@ export class WebApp {
             console.log(`Server is running on http://localhost:${this.port}`);
         });
     }
+
+    /**
+     * Returns the Express application instance.
+     * Need it for testing with Supertest.
+     */
+    public getApp(): express.Application {
+        return this.app;
+    }
+
+    public getDb(): DB {
+        return this.db;
+    }
 }
 
 async function main() {
@@ -59,7 +71,10 @@ async function main() {
     webApp.run();
 }
 
-main().catch((error) => {
-    console.error("Fatal error starting application:", error);
-    process.exit(1);
-});
+// Prevents the server from starting when the module is imported for testing.
+if (process.env.NODE_ENV !== "test") {
+    main().catch((error) => {
+        console.error("Fatal error starting application:", error);
+        process.exit(1);
+    });
+}
