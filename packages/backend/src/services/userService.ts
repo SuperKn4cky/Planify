@@ -47,6 +47,9 @@ export default class UserService {
             ) {
                 throw new AppError("This email is already in use.", 400);
             }
+            if (error instanceof AppError) {
+                throw error;
+            }
             throw new AppError("User creation failed", 500);
         }
     }
@@ -78,7 +81,10 @@ export default class UserService {
                 "7d",
             );
             return token;
-        } catch {
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             throw new AppError("Login failed", 500);
         }
     }
@@ -110,7 +116,10 @@ export default class UserService {
             }
 
             return new Date(result[0].revocation_timestamp);
-        } catch {
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             throw new AppError("Failed to retrieve revocation timestamp", 500);
         }
     }
@@ -129,7 +138,10 @@ export default class UserService {
             const userInstance = new User(result[0]);
 
             return userInstance;
-        } catch {
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             throw new AppError("Failed to retrieve user", 500);
         }
     }
@@ -144,7 +156,10 @@ export default class UserService {
             if (result.length === 0) {
                 throw new AppError("User not found", 404);
             }
-        } catch {
+        } catch (error) {
+            if (error instanceof AppError) {
+                throw error;
+            }
             throw new AppError("Failed to delete user", 500);
         }
     }
