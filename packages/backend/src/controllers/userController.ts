@@ -82,4 +82,23 @@ export default class UserController {
             next(error);
         }
     }
+
+    public async deleteUserByID(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || isNaN(Number(id))) {
+                throw new AppError("Invalid or missing user id", 400);
+            }
+            await this.userService.deleteUserByID(Number(id));
+            res.status(200).json({
+                message: "User deleted successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

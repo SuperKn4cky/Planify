@@ -133,4 +133,19 @@ export default class UserService {
             throw new AppError("Failed to retrieve user", 500);
         }
     }
+
+    public async deleteUserByID(id: number): Promise<void> {
+        try {
+            const result = await this.db
+                .delete(users)
+                .where(eq(users.id, id))
+                .returning();
+
+            if (result.length === 0) {
+                throw new AppError("User not found", 404);
+            }
+        } catch {
+            throw new AppError("Failed to delete user", 500);
+        }
+    }
 }
