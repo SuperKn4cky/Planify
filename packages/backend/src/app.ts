@@ -5,10 +5,10 @@ import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./config/cors.js";
 import startDatabase, { DB } from "./db/drizzle.js";
+import { Pool } from "pg";
 import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import generateJwtSecret from "./config/jwt.js";
-import { Pool } from "pg";
 
 export class WebApp {
     private app: express.Application;
@@ -41,11 +41,9 @@ export class WebApp {
         if (!this.jwtSecret) {
             this.jwtSecret = generateJwtSecret(this.nodeEnv);
         }
-
         const { db, pool } = await startDatabase(this.databaseUrl);
         this.db = db;
         this.pool = pool;
-
         const routes = new Routes(this.app, this.db, this.jwtSecret);
 
         await routes.register();
@@ -59,7 +57,6 @@ export class WebApp {
     }
 
     /**
-     * Returns the Express application instance.
      * Need it for testing with Supertest.
      */
     public getApp(): express.Application {
@@ -70,12 +67,13 @@ export class WebApp {
         return this.db;
     }
 
-    /**
-     * Closes the database connection pool.
-     * Essential for graceful shutdown and for tests to exit properly.
-     */
+    public getPool(): Pool {
+        return this.pool;
+    }
+
     public async close(): Promise<void> {
         await this.pool.end();
+        console.log("Database pool has been closed.");
     }
 }
 
