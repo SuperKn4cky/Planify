@@ -35,9 +35,9 @@ Voici un modèle pour votre fichier `.env`. **Assurez-vous de remplacer les vale
 # .env
 
 # Base de données PostgreSQL
-POSTGRES_DB=Planify
-POSTGRES_USER=root
-POSTGRES_PASSWORD=your_strong_password
+POSTGRES_DB="Planify"
+POSTGRES_USER="root"
+POSTGRES_PASSWORD="your_strong_password"
 
 # URL de connexion à la base de données pour le backend
 # Assurez-vous que 'user' et 'password' correspondent à POSTGRES_USER et POSTGRES_PASSWORD
@@ -45,21 +45,21 @@ DATABASE_URL="postgres://root:your_strong_password@db:5432/Planify"
 
 # Secret pour les jetons JWT (doit être une chaîne de caractères sécurisée)
 # Vous pouvez en générer un avec : openssl rand -hex 32
-JWT_SECRET=your_super_secret_hs256_key
+JWT_SECRET="your_super_secret_hs256_key"
 
 # URLs du frontend autorisées par CORS (séparées par des virgules si multiples)
-FRONTEND_URL=http://localhost:3000
+FRONTEND_URL="http://localhost:3000"
 
 # Configuration pgAdmin (optionnel)
-PGADMIN_DEFAULT_EMAIL=admin@example.com
-PGADMIN_DEFAULT_PASSWORD=admin
+PGADMIN_DEFAULT_EMAIL="admin@example.com"
+PGADMIN_DEFAULT_PASSWORD="admin"
 
 # Configuration SMTP pour l'envoi d'e-mails
-SMTP_HOST=smtp.example.com
+SMTP_HOST="smtp.example.com"
 SMTP_PORT=587
 SMTP_SECURE=false # true pour le port 465, false pour les autres
-SMTP_USER=user@example.com
-SMTP_PASS=your_smtp_password
+SMTP_USER="user@example.com"
+SMTP_PASS="your_smtp_password"
 ```
 
 ### 3. Lancer les conteneurs
