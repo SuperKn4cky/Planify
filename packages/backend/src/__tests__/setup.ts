@@ -2,7 +2,7 @@ import { WebApp } from "../app.js";
 
 beforeAll(async () => {
     process.env.NODE_ENV = "test";
-    process.env.DATABASE_URL = "postgresql://root:root@db:5433/Planify_test";
+    process.env.DATABASE_URL = "postgresql://root:root@db:5432/Planify";
 
     const webAppInstance = new WebApp();
     await webAppInstance.init();
