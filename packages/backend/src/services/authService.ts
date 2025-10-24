@@ -13,10 +13,10 @@ export default class AuthService {
     }
 
     public async generateToken(
-        user_id: number,
-        expiresIn: string | number,
+        payload: Record<string, unknown>,
+        expiresIn: string | number | Date,
     ): Promise<string> {
-        return new SignJWT({ user_id })
+        return new SignJWT(payload)
             .setProtectedHeader({ alg: "HS256", typ: "JWT" })
             .setIssuedAt()
             .setExpirationTime(expiresIn)
