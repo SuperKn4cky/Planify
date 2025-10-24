@@ -8,12 +8,14 @@ import startDatabase, { DB } from "./db/drizzle.js";
 import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
 import generateJwtSecret from "./config/jwt.js";
+import { Pool } from "pg";
 
 export class WebApp {
     private app: express.Application;
     private port: number;
     private databaseUrl?: string;
     private db!: DB;
+    private pool!: Pool;
     private jwtSecret?: string;
     private frontendUrl?: string;
     public nodeEnv: string;
@@ -39,7 +41,11 @@ export class WebApp {
         if (!this.jwtSecret) {
             this.jwtSecret = generateJwtSecret(this.nodeEnv);
         }
-        this.db = await startDatabase(this.databaseUrl);
+
+        const { db, pool } = await startDatabase(this.databaseUrl);
+        this.db = db;
+        this.pool = pool;
+
         const routes = new Routes(this.app, this.db, this.jwtSecret);
 
         await routes.register();
@@ -62,6 +68,14 @@ export class WebApp {
 
     public getDb(): DB {
         return this.db;
+    }
+
+    /**
+     * Closes the database connection pool.
+     * Essential for graceful shutdown and for tests to exit properly.
+     */
+    public async close(): Promise<void> {
+        await this.pool.end();
     }
 }
 

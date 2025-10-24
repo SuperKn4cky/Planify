@@ -1,9 +1,12 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 
 export type DB = ReturnType<typeof drizzle>;
 
-export default async function startDatabase(databaseUrl?: string): Promise<DB> {
+export default async function startDatabase(
+    databaseUrl?: string,
+): Promise<{ db: DB; pool: Pool }> {
     let db: DB | undefined;
 
     if (!databaseUrl) {
@@ -16,6 +19,7 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
     if (typeof databaseUrl === "string" && databaseUrl.includes("db")) {
         databaseUrl = databaseUrl.replace("db", "localhost");
     }
+    const pool = new Pool({ connectionString: databaseUrl });
 
     let connected = false;
     let attempts = 0;
@@ -23,7 +27,7 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
 
     while (!connected && attempts < maxAttempts) {
         try {
-            db = drizzle(databaseUrl);
+            db = drizzle(pool);
             await db.execute("select 1");
             connected = true;
             console.log("Connected to the database.");
@@ -34,6 +38,7 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
                     "Error connecting to database after 5 attempts:",
                     error,
                 );
+                await pool.end();
                 throw error;
             }
             console.warn(
@@ -56,9 +61,10 @@ export default async function startDatabase(databaseUrl?: string): Promise<DB> {
             console.log("Migration skipped: already exists.");
         } else {
             console.error("Error during database migration:", error);
+            await pool.end();
             throw error;
         }
     }
 
-    return db;
+    return { db, pool };
 }
