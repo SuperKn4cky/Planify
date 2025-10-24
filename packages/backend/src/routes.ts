@@ -54,17 +54,17 @@ export default class Routes {
 
     private async userRoutes(): Promise<void> {
         this.app.post(
-            "/users",
+            "/auth/register",
             this.userController.createUser.bind(this.userController),
         );
 
         this.app.post(
-            "/login",
+            "/auth/login",
             this.userController.loginUser.bind(this.userController),
         );
 
         this.app.post(
-            "/logout",
+            "/auth/logout",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.userController.logoutUser.bind(this.userController),
         );
