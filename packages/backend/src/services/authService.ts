@@ -15,10 +15,11 @@ export default class AuthService {
     public async generateToken(
         payload: Record<string, unknown>,
         expiresIn: string | number | Date,
+        creationDate?: Date,
     ): Promise<string> {
         return new SignJWT(payload)
             .setProtectedHeader({ alg: "HS256", typ: "JWT" })
-            .setIssuedAt()
+            .setIssuedAt(creationDate)
             .setExpirationTime(expiresIn)
             .sign(this.secret);
     }

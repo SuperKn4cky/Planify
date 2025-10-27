@@ -6,7 +6,5 @@ export const users = pgTable("users", {
     first_name: varchar("first_name", { length: 30 }).notNull(),
     last_name: varchar("last_name", { length: 30 }).notNull(),
     password: varchar("password", { length: 255 }).notNull(),
-    revocation_timestamp: timestamp("revocation_timestamp")
-        .defaultNow()
-        .notNull(),
+    revocation_timestamp: timestamp("revocation_timestamp").notNull(),
 });

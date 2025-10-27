@@ -22,13 +22,18 @@ export default class UserService {
         user: UserWithPassword,
     ): Promise<User & { token: string }> {
         try {
+            const creationDate = new Date();
+            creationDate.setMilliseconds(0);
             const hash = await argon2.hash(user.password, {
                 type: argon2.argon2id,
             });
             user.password = hash;
             const insertedUser = await this.db
                 .insert(users)
-                .values(user)
+                .values({
+                    ...user,
+                    revocation_timestamp: creationDate,
+                })
                 .returning();
             if (!insertedUser) {
                 throw new AppError("User creation failed", 500);
@@ -37,6 +42,7 @@ export default class UserService {
             const token = await this.authService.generateToken(
                 { user_id: insertedUser[0].id },
                 "7d",
+                creationDate,
             );
             const userInstance = new User(insertedUser[0]);
             return Object.assign(userInstance, { token });
