@@ -3,7 +3,7 @@ import { z } from "zod";
 export const userSchema = z.object({
     id: z.number().optional(),
     email: z
-        .email({ message: "Invalid email address" })
+        .email({ message: "Invalid email format" })
         .min(5, { message: "Email must be at least 5 characters long" })
         .max(60, { message: "Email must be at most 60 characters long" }),
     first_name: z
