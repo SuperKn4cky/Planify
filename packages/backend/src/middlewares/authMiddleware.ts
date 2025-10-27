@@ -15,6 +15,11 @@ export default class AuthMiddleware {
     ): Promise<void> {
         const authHeader = req.headers.authorization;
 
+        if (!authHeader) {
+            res.status(401).json({ error: "User not authenticated" });
+            return;
+        }
+
         if (!authHeader?.startsWith("Bearer ")) {
             res.status(401).json({ error: "Unauthorized" });
             return;
