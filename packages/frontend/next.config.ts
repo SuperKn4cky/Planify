@@ -1,19 +1,20 @@
 import type { NextConfig } from "next";
 
+const BACKEND_INTERNAL_URL =
+  process.env.DOCKERIZED === "1"
+    ? "http://Planify-back:4000"
+    : "http://localhost:4000";
+
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ['localhost'],
-  },
-  env: {
-    BACKEND_URL: process.env.BACKEND_URL,
+    domains: ["localhost"],
   },
   async rewrites() {
-    if (!process.env.BACKEND_URL) throw new Error('BACKEND_URL missing');
     return [
       {
         source: "/api/:path*",
-        destination: `${process.env.BACKEND_URL}/:path*`,
+        destination: `${BACKEND_INTERNAL_URL}/:path*`,
       },
     ];
   },
