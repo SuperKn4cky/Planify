@@ -1,28 +1,38 @@
 import cors from "cors";
 
-export const corsOptions = (
-    frontendUrl?: string | string[],
-): cors.CorsOptions => {
-    const allowedOrigins = Array.isArray(frontendUrl)
-        ? frontendUrl.map((u) => u.trim()).filter(Boolean)
-        : (frontendUrl || "")
-              .split(",")
-              .map((u) => u.trim())
-              .filter(Boolean);
+const LOCAL_ALLOWLIST = new Set<string>([
+    "http://localhost:3000",
+    "http://Planify-front:3000",
+]);
+
+export const corsOptions = (): cors.CorsOptions => {
+    const isAllowed = (origin?: string) => {
+        if (!origin) return true;
+        return LOCAL_ALLOWLIST.has(origin);
+    };
 
     return {
         origin: (origin, callback) => {
-            if (!origin || allowedOrigins.includes(origin)) {
-                callback(null, true);
-            } else {
-                console.log(
-                    `CORS blocked origin: ${origin}, allowed origins: ${allowedOrigins}`,
-                );
-                callback(new Error("Origin not allowed by CORS"));
+            if (isAllowed(origin)) {
+                return callback(null, true);
             }
+            if (process.env.NODE_ENV !== "production") {
+                // eslint-disable-next-line no-console
+                console.warn(`CORS blocked origin: ${origin}`);
+            }
+            return callback(new Error("Origin not allowed by CORS"));
         },
         methods: ["GET", "POST", "PUT", "DELETE", "OPTIONS"],
-        allowedHeaders: ["Content-Type", "Authorization", "X-CSRF-Token"],
+        allowedHeaders: [
+            "Content-Type",
+            "Authorization",
+            "X-CSRF-Token",
+            "X-Requested-With",
+            "Accept",
+            "Origin",
+            "Referer",
+        ],
         credentials: true,
+        maxAge: 600,
     };
 };
