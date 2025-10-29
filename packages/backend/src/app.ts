@@ -8,6 +8,7 @@ import startDatabase, { DB } from "./db/drizzle.js";
 import { Pool } from "pg";
 import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
+import cookieParser from "cookie-parser";
 
 export class WebApp {
     private app: express.Application;
@@ -30,15 +31,16 @@ export class WebApp {
             process.env.POSTGRES_DB
                 ? `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@db:5432/${process.env.POSTGRES_DB}`
                 : undefined;
-        this.frontendUrl = "http://localhost:3000";
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
         this.app = express();
-        this.app.use(cors(corsOptions(this.frontendUrl)));
-        this.app.options("/*splat", cors(corsOptions(this.frontendUrl)));
+        this.app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
+        this.app.use(cors(corsOptions()));
+        this.app.options("/*splat", cors(corsOptions()));
         this.app.use(express.urlencoded({ extended: true }));
         this.app.use(express.json());
+        this.app.use(cookieParser());
     }
 
     public async init(): Promise<void> {

@@ -13,19 +13,17 @@ export default class AuthMiddleware {
         res: Response,
         next: NextFunction,
     ): Promise<void> {
-        const authHeader = req.headers.authorization;
+        let token: string | undefined;
+        const authCookie = req.cookies?.auth;
 
-        if (!authHeader) {
-            res.status(401).json({ error: "User not authenticated" });
-            return;
+        if (authCookie?.startsWith("Bearer ")) {
+            token = authCookie.replace("Bearer ", "");
         }
 
-        if (!authHeader?.startsWith("Bearer ")) {
-            res.status(401).json({ error: "Unauthorized" });
+        if (!token) {
+            res.status(401).json({ error: "Token is missing" });
             return;
         }
-
-        const token = authHeader.split(" ")[1];
 
         try {
             const payload = await this.authService.verifyToken(token);
