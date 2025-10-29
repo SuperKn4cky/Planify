@@ -20,6 +20,7 @@ export default async function startDatabase(
     if (typeof databaseUrl === "string" && databaseUrl.includes("db")) {
         databaseUrl = databaseUrl.replace("db", "localhost");
     }
+    console.log("Connecting to database at:", databaseUrl);
     const pool = new Pool({ connectionString: databaseUrl });
 
     let connected = false;
