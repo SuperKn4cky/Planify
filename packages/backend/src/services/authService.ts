@@ -1,5 +1,6 @@
-import { SignJWT, jwtVerify, JWTPayload } from "jose";
+import { SignJWT, jwtVerify, JWTPayload, errors } from "jose";
 import UserService from "./userService.js";
+import AppError from "../middlewares/errorHandler.js";
 
 export default class AuthService {
     private secret: Uint8Array;
@@ -25,8 +26,20 @@ export default class AuthService {
     }
 
     public async verifyToken(token: string): Promise<JWTPayload> {
-        const { payload } = await jwtVerify(token, this.secret);
-        return payload;
+        try {
+            const { payload } = await jwtVerify(token, this.secret);
+            return payload;
+        } catch (error) {
+            if (
+                error instanceof errors.JWSSignatureVerificationFailed ||
+                error instanceof errors.JWSInvalid ||
+                error instanceof errors.JWTExpired ||
+                error instanceof errors.JWTInvalid
+            ) {
+                throw new AppError("Invalid or expired token", 401);
+            }
+            throw new AppError("Token verification failed", 500);
+        }
     }
 
     public async verifyRevocation(payload: JWTPayload): Promise<boolean> {
@@ -35,7 +48,7 @@ export default class AuthService {
             typeof payload.iat !== "number" ||
             typeof payload.user_id !== "number"
         ) {
-            throw new Error("Invalid payload.");
+            throw new AppError("Invalid payload", 400);
         }
         const revocationTimestamp =
             await this.userService.getRevocationTimestamp(payload.user_id);
