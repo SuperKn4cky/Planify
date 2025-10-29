@@ -18,7 +18,10 @@ export default async function startDatabase(
         );
     }
 
-    if (process.env.NODE_ENV === "development") {
+    if (
+        process.env.NODE_ENV === "development" ||
+        process.env.NODE_ENV === "test"
+    ) {
         databaseUrl = databaseUrl.replace("db", "localhost");
     }
     const pool = new Pool({ connectionString: databaseUrl });
