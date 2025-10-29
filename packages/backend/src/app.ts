@@ -3,12 +3,11 @@ import { fileURLToPath } from "url";
 import path from "path";
 import dotenv from "dotenv";
 import cors from "cors";
-import { corsOptions } from "./config/cors.js";
+import { corsOptions } from "./middlewares/corsMiddleware.js";
 import startDatabase, { DB } from "./db/drizzle.js";
 import { Pool } from "pg";
 import Routes from "./routes.js";
 import { errorHandler } from "./middlewares/errorHandler.js";
-import generateJwtSecret from "./config/jwt.js";
 
 export class WebApp {
     private app: express.Application;
@@ -25,7 +24,12 @@ export class WebApp {
         const __dirname = path.dirname(__filename);
         dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
         this.port = parseInt(process.env.PORT || "4000", 10);
-        this.databaseUrl = process.env.DATABASE_URL || undefined;
+        this.databaseUrl =
+            process.env.POSTGRES_USER &&
+            process.env.POSTGRES_PASSWORD &&
+            process.env.POSTGRES_DB
+                ? `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@db:5432/${process.env.POSTGRES_DB}`
+                : undefined;
         this.frontendUrl = "http://localhost:3000";
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
@@ -39,7 +43,7 @@ export class WebApp {
 
     public async init(): Promise<void> {
         if (!this.jwtSecret) {
-            this.jwtSecret = generateJwtSecret(this.nodeEnv);
+            return Promise.reject(new Error("JWT_SECRET is not defined"));
         }
         const { db, pool } = await startDatabase(this.databaseUrl);
         this.db = db;
