@@ -1,7 +1,4 @@
 import express from "express";
-import { fileURLToPath } from "url";
-import path from "path";
-import dotenv from "dotenv";
 import cors from "cors";
 import { corsOptions } from "./middlewares/corsMiddleware.js";
 import startDatabase, { DB } from "./db/drizzle.js";
@@ -17,13 +14,9 @@ export class WebApp {
     private db!: DB;
     private pool!: Pool;
     private jwtSecret?: string;
-    private frontendUrl?: string;
     public nodeEnv: string;
 
     public constructor() {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
         this.port = parseInt(process.env.PORT || "4000", 10);
         this.databaseUrl =
             process.env.POSTGRES_USER &&
