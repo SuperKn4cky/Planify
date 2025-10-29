@@ -58,8 +58,8 @@ describe("POST /auth/register", () => {
         expect(response.status).toBe(201);
         expect(response.body.message).toEqual("User created successfully");
         expect(response.body.data.email).toEqual(userData.email);
-        expect(response.body.token).toBeDefined();
-        expect(typeof response.body.token).toBe("string");
+        const cookieHeader = response.headers["set-cookie"];
+        expect(cookieHeader[0]).toMatch(/^auth=Bearer%20/);
     });
 });
 
@@ -120,8 +120,8 @@ describe("POST /auth/login", () => {
 
         expect(response.status).toBe(200);
         expect(response.body.message).toEqual("Login successful");
-        expect(response.body.token).toBeDefined();
-        expect(typeof response.body.token).toBe("string");
+        const cookieHeader = response.headers["set-cookie"];
+        expect(cookieHeader[0]).toMatch(/^auth=Bearer%20/);
     });
 });
 
@@ -134,7 +134,7 @@ describe("POST /auth/logout", () => {
         const response = await request(global.app).post("/auth/logout").send();
 
         expect(response.status).toBe(401);
-        expect(response.body.error).toEqual("User not authenticated");
+        expect(response.body.error).toEqual("Token is missing");
     });
 
     it("devrait retourner 200 pour une déconnexion réussie", async () => {
@@ -149,11 +149,11 @@ describe("POST /auth/logout", () => {
             .send(userData)
             .expect(201);
 
-        const token = registerResponse.body.token;
+        const cookie = registerResponse.headers["set-cookie"];
 
         const response = await request(global.app)
             .post("/auth/logout")
-            .set("Authorization", `Bearer ${token}`)
+            .set("Cookie", cookie)
             .send();
 
         expect(response.status).toBe(200);
@@ -172,17 +172,17 @@ describe("POST /auth/logout", () => {
             .send(userData)
             .expect(201);
 
-        const token = registerResponse.body.token;
+        const cookie = registerResponse.headers["set-cookie"];
 
         await request(global.app)
             .post("/auth/logout")
-            .set("Authorization", `Bearer ${token}`)
+            .set("Cookie", cookie)
             .send()
             .expect(200);
 
         const response = await request(global.app)
             .post("/auth/logout")
-            .set("Authorization", `Bearer ${token}`)
+            .set("Cookie", cookie)
             .send();
 
         expect(response.status).toBe(401);
