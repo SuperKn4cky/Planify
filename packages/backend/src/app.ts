@@ -26,7 +26,7 @@ export class WebApp {
         dotenv.config({ path: path.resolve(__dirname, "../../../.env") });
         this.port = parseInt(process.env.PORT || "4000", 10);
         this.databaseUrl = process.env.DATABASE_URL || undefined;
-        this.frontendUrl = process.env.FRONTEND_URL || "http://localhost:3000";
+        this.frontendUrl = "http://localhost:3000";
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
