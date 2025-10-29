@@ -1,5 +1,6 @@
 import { Request, Response, NextFunction } from "express";
 import AuthService from "../services/authService.js";
+import AppError from "./errorHandler.js";
 
 export default class AuthMiddleware {
     private authService: AuthService;
@@ -36,8 +37,12 @@ export default class AuthMiddleware {
             }
 
             next();
-        } catch {
-            res.status(401).json({ error: "Invalid or expired token" });
+        } catch (error) {
+            if (error instanceof AppError) {
+                res.status(error.status).json({ error: error.message });
+            } else {
+                res.status(500).json({ error: "Internal server error" });
+            }
         }
     }
 
