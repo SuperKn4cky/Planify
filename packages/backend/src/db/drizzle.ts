@@ -10,9 +10,10 @@ export default async function startDatabase(
     let db: DB | undefined;
 
     if (!databaseUrl) {
-        console.error("DATABASE_URL is not defined in environment variables.");
+        console.error("Database URL is not valid.");
         throw new Error(
-            "DATABASE_URL is not defined in environment variables.",
+            "Database URL is not valid: \
+            expected env variables POSTGRES_USER, POSTGRES_PASSWORD, and POSTGRES_DB.",
         );
     }
 
