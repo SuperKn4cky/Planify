@@ -1,6 +1,7 @@
 import { migrate } from "drizzle-orm/node-postgres/migrator";
 import { drizzle } from "drizzle-orm/node-postgres";
 import { Pool } from "pg";
+import { da } from "zod/locales";
 
 export type DB = ReturnType<typeof drizzle>;
 
@@ -17,6 +18,9 @@ export default async function startDatabase(
         );
     }
 
+    if (process.env.NODE_ENV === "development") {
+        databaseUrl = databaseUrl.replace("db", "localhost");
+    }
     const pool = new Pool({ connectionString: databaseUrl });
 
     let connected = false;
