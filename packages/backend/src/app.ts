@@ -27,11 +27,6 @@ export class WebApp {
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
-        console.log("databaseUrl:", this.databaseUrl);
-        console.log("postgres user:", process.env.POSTGRES_USER);
-        console.log("postgres password:", process.env.POSTGRES_PASSWORD);
-        console.log("postgres db:", process.env.POSTGRES_DB);
-
         this.app = express();
         this.app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
         this.app.use(cors(corsOptions()));

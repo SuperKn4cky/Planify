@@ -17,7 +17,6 @@ export default async function startDatabase(
         );
     }
 
-    console.log("Connecting to database at:", databaseUrl);
     const pool = new Pool({ connectionString: databaseUrl });
 
     let connected = false;
