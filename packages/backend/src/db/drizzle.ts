@@ -17,13 +17,6 @@ export default async function startDatabase(
         );
     }
 
-    if (
-        process.env.NODE_ENV !== "development" &&
-        typeof databaseUrl === "string" &&
-        databaseUrl.includes("db")
-    ) {
-        databaseUrl = databaseUrl.replace("db", "localhost");
-    }
     console.log("Connecting to database at:", databaseUrl);
     const pool = new Pool({ connectionString: databaseUrl });
 
