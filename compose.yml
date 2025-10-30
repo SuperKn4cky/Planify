@@ -104,7 +104,6 @@ services:
             - SMTP_SECURE=${SMTP_SECURE}
             - SMTP_USER=${SMTP_USER}
             - SMTP_PASS=${SMTP_PASS}
-            - TRUST_PROXY=1
         depends_on:
             - db
         networks:
