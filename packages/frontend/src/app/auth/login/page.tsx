@@ -32,8 +32,12 @@ export default function LoginPage() {
       setLoading(true);
       await postJSON<LoginResponse>("/auth/login", { email, password });
       router.push("/"); // Ou "/dashboard"
-    } catch (err: any) {
-      setError(err?.message ?? "Identifiants invalides.");
+    } catch (err: unknown) {
+      if (err instanceof Error) {
+        setError(err.message);
+      } else {
+        setError("Une erreur inattendue est survenue.");
+      }
     } finally {
       setLoading(false);
     }
@@ -138,7 +142,7 @@ export default function LoginPage() {
         </button>
 
         <div className="mt-3 text-center text-sm text-[#6B7280]">
-          Vous n'avez pas de compte ?{" "}
+          Vous n&apos;avez pas de compte ?{" "}
           <a href="/auth/register" className="text-[#2D6AE3] hover:underline">
             Créer un compte
           </a>
