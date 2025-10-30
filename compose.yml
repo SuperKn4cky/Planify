@@ -81,11 +81,11 @@ services:
             - "traefik.http.routers.front.middlewares=secure-headers,csp,ratelimit"
             # Bloquer toute tentative d'appel direct à /api en redirigeant vers 403 directement au niveau proxy
             # Nécessite un second routeur capturant /api, attaché à un middleware 403:
-            # - "traefik.http.routers.front-api-block.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)"
-            # - "traefik.http.routers.front-api-block.entrypoints=websecure"
-            # - "traefik.http.routers.front-api-block.tls.certresolver=le"
-            # - "traefik.http.routers.front-api-block.middlewares=ratelimit"
-            # - "traefik.http.routers.front-api-block.service=error-svc"
+            - "traefik.http.routers.front-api-block.rule=Host(`${APP_DOMAIN}`) && PathPrefix(`/api`)"
+            - "traefik.http.routers.front-api-block.entrypoints=web" # Changé de websecure à web
+            # - "traefik.http.routers.front-api-block.tls.certresolver=le" # Désactivé pour le test local
+            - "traefik.http.routers.front-api-block.middlewares=ratelimit"
+            - "traefik.http.routers.front-api-block.service=error-svc"
 
     back:
         image: superknacky/planify_backend:latest
