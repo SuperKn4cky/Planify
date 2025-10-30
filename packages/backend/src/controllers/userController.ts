@@ -18,7 +18,12 @@ export default class UserController {
         next: NextFunction,
     ): Promise<void> {
         try {
-            const newUser = new UserWithPassword(req.body);
+            const newUser = new UserWithPassword({
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                email: req.body.email,
+                password: req.body.password,
+            });
             const user = await this.userService.createUser(newUser);
             res.cookie("auth", "Bearer " + user.token, {
                 httpOnly: true,
