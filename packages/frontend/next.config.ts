@@ -8,7 +8,11 @@ const BACKEND_INTERNAL_URL =
 const nextConfig: NextConfig = {
   reactStrictMode: true,
   images: {
-    domains: ["localhost"],
+    remotePatterns: [
+      {
+        hostname: "localhost",
+      },
+    ],
   },
   async rewrites() {
     return [
