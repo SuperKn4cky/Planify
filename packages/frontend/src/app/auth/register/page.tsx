@@ -49,7 +49,7 @@ export default function RegisterPage() {
         email,
         password,
       });
-      router.push("/"); // ou "/dashboard"
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);

@@ -31,7 +31,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await postJSON<LoginResponse>("/auth/login", { email, password });
-      router.push("/"); // Ou "/dashboard"
+      router.push("/");
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
