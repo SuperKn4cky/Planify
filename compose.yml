@@ -48,7 +48,14 @@ services:
             - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=no-referrer"
             - "traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true"
             - "traefik.http.middlewares.secure-headers.headers.browserXssFilter=true"
-            - "traefik.http.middlewares.csp.headers.contentSecurityPolicy=default-src 'self'; script-src 'self' 'unsafe-inline'; style-src 'self' 'unsafe-inline'; img-src 'self' data:; font-src 'self' data:; connect-src 'self' http://localhost ws://localhost; frame-ancestors 'none'"
+            - "traefik.http.middlewares.csp.headers.contentSecurityPolicy=\
+              default-src 'self'; \
+              script-src 'self' 'unsafe-inline'; \
+              style-src 'self' 'unsafe-inline'; \
+              img-src 'self' data:; \
+              font-src 'self' data:; \
+              connect-src 'self' http://localhost ws://localhost; \
+              frame-ancestors 'none'"
             - "traefik.http.middlewares.ratelimit.ratelimit.average=50"
             - "traefik.http.middlewares.ratelimit.ratelimit.burst=100"
             # Middleware pour bloquer tout accès direct à /api au niveau proxy
