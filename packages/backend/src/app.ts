@@ -28,7 +28,6 @@ export class WebApp {
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
         this.app = express();
-        this.app.set("trust proxy", Number(process.env.TRUST_PROXY || 1));
         this.app.use(cors(corsOptions()));
         this.app.options("/*splat", cors(corsOptions()));
         this.app.use(express.urlencoded({ extended: true }));
