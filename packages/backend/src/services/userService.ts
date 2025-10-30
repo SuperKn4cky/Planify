@@ -49,7 +49,7 @@ export default class UserService {
         } catch (error) {
             if (
                 error instanceof DrizzleQueryError &&
-                (error as any).cause.code
+                (error as any).cause.code === "23505"
             ) {
                 throw new AppError("This email is already in use.", 400);
             }
