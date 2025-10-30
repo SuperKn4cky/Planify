@@ -13,14 +13,17 @@ export async function postJSON<T>(
     body: JSON.stringify(body ?? {}),
     ...init,
   });
-  let data: any = null;
+  let data: unknown = null;
   try {
     data = await res.json();
   } catch {
     /* ignore */
   }
   if (!res.ok) {
-    const message = data?.message || data?.error || `Erreur ${res.status}`;
+    const message =
+      (data as { message?: string })?.message ||
+      (data as { error?: string })?.error ||
+      `Erreur ${res.status}`;
     throw new Error(String(message));
   }
   return data as T;
