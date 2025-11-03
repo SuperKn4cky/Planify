@@ -34,7 +34,7 @@ export default class Routes {
         this.userController = new UserController(this.userService);
     }
 
-    public async register(): Promise<void> {
+    public register(): void {
         // User routes
         this.userRoutes();
 
@@ -52,7 +52,7 @@ export default class Routes {
         });
     }
 
-    private async userRoutes(): Promise<void> {
+    private userRoutes(): void {
         this.app.post(
             "/auth/register",
             this.userController.createUser.bind(this.userController),
