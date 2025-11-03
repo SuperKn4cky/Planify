@@ -4,13 +4,10 @@
   "private": true,
   "type": "module",
   "scripts": {
+    "dev": "dotenv -e ../../.env nodemon",
     "build": "yarn tsc",
     "start": "dotenv -e ../../.env node dist/app.js",
-    "dev": "dotenv -e ../../.env nodemon",
-    "static": "eslint .",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest",
-    "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
-    "format": "prettier --write '**/*.{js,jsx,ts,tsx,css,scss,json}' '!db/**'"
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest"
   },
   "dependencies": {
     "argon2": "^0.44.0",
@@ -24,7 +21,6 @@
     "zod": "^4.1.12"
   },
   "devDependencies": {
-    "@eslint/eslintrc": "^3.3.1",
     "@types/cookie-parser": "^1.4.10",
     "@types/cors": "^2.8.19",
     "@types/express": "^5.0.5",
@@ -35,9 +31,6 @@
     "cross-env": "^10.1.0",
     "dotenv-cli": "^11.0.0",
     "drizzle-kit": "^0.31.6",
-    "eslint": "^9.39.0",
-    "eslint-config-prettier": "^10.1.8",
-    "eslint-plugin-prettier": "^5.5.4",
     "jest": "^30.2.0",
     "prettier": "^3.6.2",
     "supertest": "^7.1.4",

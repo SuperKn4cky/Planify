@@ -1,22 +1,36 @@
 {
-    "name": "planify",
-    "packageManager": "yarn@4.10.3",
-    "private": true,
-    "workspaces": [
-        "packages/*"
-    ],
-    "scripts": {
-        "dev:front": "yarn workspace frontend dev",
-        "dev:back": "yarn workspace backend dev",
-        "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
-        "prepare": "husky"
-    },
-    "devDependencies": {
-        "concurrently": "^9.2.1",
-        "husky": "^9.1.7",
-        "lint-staged": "^16.2.6"
-    },
-    "lint-staged": {
-        "*.{js,jsx,ts,tsx,vue,css,scss,md,json,yml,yaml}": "prettier --write"
-    }
+  "name": "planify",
+  "packageManager": "yarn@4.10.3",
+  "private": true,
+  "workspaces": [
+    "packages/*"
+  ],
+  "scripts": {
+    "dev:front": "yarn workspace frontend dev",
+    "dev:back": "yarn workspace backend dev",
+    "dev": "concurrently \"yarn dev:frontend\" \"yarn dev:backend\"",
+    "prepare": "husky",
+    "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
+    "format": "prettier --write '**/*.{js,jsx,ts,tsx,css,scss,json}' '!db/**'",
+    "lint": "eslint . --ext .js,.jsx,.ts,.tsx"
+  },
+  "devDependencies": {
+    "@eslint/eslintrc": "^3.3.1",
+    "@eslint/js": "^9.39.0",
+    "@typescript-eslint/eslint-plugin": "^8.46.2",
+    "@typescript-eslint/parser": "^8.46.2",
+    "concurrently": "^9.2.1",
+    "eslint": "^9.39.0",
+    "eslint-config-next": "16.0.1",
+    "eslint-config-prettier": "^10.1.8",
+    "eslint-plugin-prettier": "^5.5.4",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.2.6",
+    "prettier": "^3.6.2",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.46.2"
+  },
+  "lint-staged": {
+    "*.{js,jsx,ts,tsx,vue,css,scss,md,json,yml,yaml}": "prettier --write"
+  }
 }
