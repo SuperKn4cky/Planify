@@ -1,19 +1,20 @@
 import { NextResponse } from "next/server";
 import type { NextRequest } from "next/server";
 
-export function middleware(req: NextRequest) {
+export function proxy(req: NextRequest) {
   const token = req.cookies.get("auth");
   const { pathname } = req.nextUrl;
 
-  const publicPaths = ["/auth/login", "/auth/register", "/"];
+  const authPaths = new Set(["/auth/login", "/auth/register"]);
+  const publicPaths = new Set(["/", ...authPaths]);
 
-  const isPublicPath = publicPaths.includes(pathname);
+  const isPublicPath = publicPaths.has(pathname);
 
   if (!token && !isPublicPath) {
     return NextResponse.redirect(new URL("/auth/login", req.url));
   }
 
-  if (token && (pathname === "/auth/login" || pathname === "/auth/register")) {
+  if (token && authPaths.has(pathname)) {
     return NextResponse.redirect(new URL("/dashboard", req.url));
   }
 
