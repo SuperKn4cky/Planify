@@ -5,31 +5,33 @@ import { Providers } from "./providers";
 import AppFrame from "@/components/AppFrame";
 
 const inter = Inter({
-  subsets: ["latin"],
-  variable: "--font-inter",
-  display: "swap",
+    subsets: ["latin"],
+    variable: "--font-inter",
+    display: "swap",
 });
 
 const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
+    variable: "--font-geist-mono",
+    subsets: ["latin"],
 });
 
 export const metadata: Metadata = {
-  title: "Planify",
-  description: "Application de gestion de tâches",
+    title: "Planify",
+    description: "Application de gestion de tâches",
 };
 
 export default function RootLayout({
-  children,
+    children,
 }: Readonly<{ children: React.ReactNode }>) {
-  return (
-    <html lang="en">
-      <body className={`${inter.variable} ${geistMono.variable} antialiased`}>
-        <Providers>
-          <AppFrame>{children}</AppFrame>
-        </Providers>
-      </body>
-    </html>
-  );
+    return (
+        <html lang="en">
+            <body
+                className={`${inter.variable} ${geistMono.variable} antialiased`}
+            >
+                <Providers>
+                    <AppFrame>{children}</AppFrame>
+                </Providers>
+            </body>
+        </html>
+    );
 }

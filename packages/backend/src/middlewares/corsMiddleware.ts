@@ -17,7 +17,6 @@ export const corsOptions = (): cors.CorsOptions => {
                 return callback(null, true);
             }
             if (process.env.NODE_ENV !== "production") {
-                // eslint-disable-next-line no-console
                 console.warn(`CORS blocked origin: ${origin}`);
             }
             return callback(new Error("Origin not allowed by CORS"));
