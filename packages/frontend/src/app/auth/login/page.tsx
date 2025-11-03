@@ -6,6 +6,7 @@ import Image from "next/image";
 import { postJSON } from "@/lib/api";
 import { loginSchema } from "@/features/auth/validation";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 
 type LoginResponse = { message?: string };
 
@@ -16,6 +17,7 @@ export default function LoginPage() {
   const [showPwd, setShowPwd] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const { login } = useAuth();
 
   async function onSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -31,7 +33,7 @@ export default function LoginPage() {
     try {
       setLoading(true);
       await postJSON<LoginResponse>("/auth/login", { email, password });
-      router.push("/");
+      login();
     } catch (err: unknown) {
       if (err instanceof Error) {
         setError(err.message);
