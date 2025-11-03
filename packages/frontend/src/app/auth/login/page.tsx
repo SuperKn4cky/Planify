@@ -7,6 +7,7 @@ import { postJSON } from "@/lib/api";
 import { loginSchema } from "@/features/auth/validation";
 import { Eye, EyeOff } from "lucide-react";
 import { useAuth } from "@/contexts/AuthContext";
+import logo from "@/../public/planify.png";
 
 type LoginResponse = { message?: string };
 
@@ -50,7 +51,7 @@ export default function LoginPage() {
       {/* En-tête: Logo + Titre superposé */}
       <div className="relative mb-8">
         <Image
-          src="/planify.png"
+          src={logo}
           alt="Planify"
           width={440}
           height={96}

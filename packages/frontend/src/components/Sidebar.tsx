@@ -5,6 +5,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useAuth } from "@/contexts/AuthContext";
 import { FileCheck, Users, User, LogOut } from "lucide-react";
+import logo from "@/../public/planify.png";
 
 type Item = {
   href: string;
@@ -49,7 +50,7 @@ export default function Sidebar() {
       <div>
         <div className="flex items-center gap-3">
           <Image
-            src="/planify.png"
+            src={logo}
             alt="Planify"
             width={160}
             height={40}

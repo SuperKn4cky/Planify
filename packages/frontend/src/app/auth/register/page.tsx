@@ -6,6 +6,7 @@ import Image from "next/image";
 import { postJSON } from "@/lib/api";
 import { registerSchema } from "@/features/auth/validation";
 import { Eye, EyeOff } from "lucide-react";
+import logo from "@/../public/planify.png";
 
 type RegisterResponse = {
   message?: string;
@@ -67,7 +68,7 @@ export default function RegisterPage() {
         {/* En-tête: lockup image + sous-titre */}
         <div className="relative mb-8">
           <Image
-            src="/planify.png"
+            src={logo}
             alt="Planify"
             width={440}
             height={96}
