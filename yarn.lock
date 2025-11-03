@@ -2034,13 +2034,6 @@ __metadata:
   languageName: node
   linkType: hard
 
-"@types/js-cookie@npm:^3.0.6":
-  version: 3.0.6
-  resolution: "@types/js-cookie@npm:3.0.6"
-  checksum: 10c0/173afaf5ea9d86c22395b9d2a00b6adb0006dcfef165d6dcb0395cdc32f5a5dcf9c3c60f97194119963a15849b8f85121e1ae730b03e40bc0c29b84396ba22f9
-  languageName: node
-  linkType: hard
-
 "@types/json-schema@npm:^7.0.15":
   version: 7.0.15
   resolution: "@types/json-schema@npm:7.0.15"
@@ -4798,11 +4791,9 @@ __metadata:
   resolution: "frontend@workspace:packages/frontend"
   dependencies:
     "@tailwindcss/postcss": "npm:^4.1.16"
-    "@types/js-cookie": "npm:^3.0.6"
     "@types/node": "npm:^24.10.0"
     "@types/react": "npm:^19.2.2"
     "@types/react-dom": "npm:^19.2.2"
-    js-cookie: "npm:^3.0.5"
     lucide-react: "npm:^0.552.0"
     next: "npm:16.0.1"
     react: "npm:19.2.0"
@@ -6205,13 +6196,6 @@ __metadata:
   version: 6.1.0
   resolution: "jose@npm:6.1.0"
   checksum: 10c0/f4518579e907317e144facd15c7627acd06097bbea17735097437217498aa419564c039dd4020f6af5f2d024a7cee6b7be4648ccbbdc238aedb80a47c061217d
-  languageName: node
-  linkType: hard
-
-"js-cookie@npm:^3.0.5":
-  version: 3.0.5
-  resolution: "js-cookie@npm:3.0.5"
-  checksum: 10c0/04a0e560407b4489daac3a63e231d35f4e86f78bff9d792011391b49c59f721b513411cd75714c418049c8dc9750b20fcddad1ca5a2ca616c3aca4874cce5b3a
   languageName: node
   linkType: hard
 
