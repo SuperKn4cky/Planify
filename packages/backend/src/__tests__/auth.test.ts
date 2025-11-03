@@ -125,13 +125,15 @@ describe("POST /auth/login", () => {
     });
 });
 
-describe("POST /auth/logout", () => {
+describe("POST /auth/logout-all", () => {
     beforeEach(async () => {
         await global.db.delete(users);
     });
 
     it("devrait retourner 401 si l'utilisateur n'est pas authentifié", async () => {
-        const response = await request(global.app).post("/auth/logout").send();
+        const response = await request(global.app)
+            .post("/auth/logout-all")
+            .send();
 
         expect(response.status).toBe(401);
         expect(response.body.error).toEqual("Token is missing");
@@ -152,12 +154,14 @@ describe("POST /auth/logout", () => {
         const cookie = registerResponse.headers["set-cookie"];
 
         const response = await request(global.app)
-            .post("/auth/logout")
+            .post("/auth/logout-all")
             .set("Cookie", cookie)
             .send();
 
         expect(response.status).toBe(200);
-        expect(response.body.message).toEqual("Logout successful");
+        expect(response.body.message).toEqual(
+            "All tokens revoked successfully",
+        );
     });
 
     it("devrait retourner 401 et le message 'Token has been revoked' pour un token révoqué", async () => {
@@ -175,13 +179,13 @@ describe("POST /auth/logout", () => {
         const cookie = registerResponse.headers["set-cookie"];
 
         await request(global.app)
-            .post("/auth/logout")
+            .post("/auth/logout-all")
             .set("Cookie", cookie)
             .send()
             .expect(200);
 
         const response = await request(global.app)
-            .post("/auth/logout")
+            .post("/auth/logout-all")
             .set("Cookie", cookie)
             .send();
 
