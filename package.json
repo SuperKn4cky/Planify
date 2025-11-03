@@ -18,8 +18,5 @@
     },
     "lint-staged": {
         "*.{js,jsx,ts,tsx,vue,css,scss,md,json,yml,yaml}": "prettier --write"
-    },
-    "dependencies": {
-        "lucide-react": "^0.548.0"
     }
 }
