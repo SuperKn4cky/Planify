@@ -101,6 +101,34 @@ export default class UserController {
         }
     }
 
+    public async updateUserByID(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            const { id } = req.params;
+            if (!id || isNaN(Number(id))) {
+                throw new AppError("Invalid or missing user id", 400);
+            }
+            const updatedData: Partial<User> = {
+                first_name: req.body.first_name,
+                last_name: req.body.last_name,
+                email: req.body.email,
+            };
+            const updatedUser = await this.userService.updateUserByID(
+                Number(id),
+                updatedData,
+            );
+            res.status(200).json({
+                message: "User updated successfully",
+                data: updatedUser.toPublic(),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public async deleteUserByID(
         req: Request,
         res: Response,

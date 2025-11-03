@@ -152,6 +152,37 @@ export default class UserService {
         }
     }
 
+    public async updateUserByID(
+        id: number,
+        updatedData: Partial<User>,
+    ): Promise<User> {
+        try {
+            const result = await this.db
+                .update(users)
+                .set(updatedData)
+                .where(eq(users.id, id))
+                .returning();
+
+            if (result.length === 0) {
+                throw new AppError("User not found", 404);
+            }
+            const userInstance = new User(result[0]);
+
+            return userInstance;
+        } catch (error) {
+            if (
+                error instanceof DrizzleQueryError &&
+                (error as any).cause.code === "23505"
+            ) {
+                throw new AppError("This email is already in use.", 400);
+            }
+            if (error instanceof AppError) {
+                throw error;
+            }
+            throw new AppError("Failed to update user", 500);
+        }
+    }
+
     public async deleteUserByID(id: number): Promise<void> {
         try {
             const result = await this.db
