@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { postJSON } from "@/lib/api";
 import { loginSchema } from "@/features/auth/validation";
@@ -12,7 +11,6 @@ import logo from "@/../public/planify.png";
 type LoginResponse = { message?: string };
 
 export default function LoginPage() {
-    const router = useRouter();
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [showPwd, setShowPwd] = useState(false);
