@@ -74,10 +74,28 @@ export default class UserController {
             if (!req.user || !req.user.id) {
                 throw new AppError("User not authenticated", 401);
             }
-            await this.userService.revokeTokens(req.user.id);
             res.clearCookie("auth", { path: "/" });
             res.status(200).json({
                 message: "Logout successful",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async logoutAllTokens(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user || !req.user.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+            await this.userService.revokeTokens(req.user.id);
+            res.clearCookie("auth", { path: "/" });
+            res.status(200).json({
+                message: "All tokens revoked successfully",
             });
         } catch (error) {
             next(error);

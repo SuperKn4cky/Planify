@@ -69,6 +69,12 @@ export default class Routes {
             this.userController.logoutUser.bind(this.userController),
         );
 
+        this.app.post(
+            "/auth/logout-all",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.userController.logoutAllTokens.bind(this.userController),
+        );
+
         this.app.get(
             "/users/:id",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
