@@ -1,21 +1,18 @@
 "use client";
-
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import Cookies from "js-cookie";
+import { postJSON } from "@/lib/api";
 
 interface AuthContextType {
     isAuthenticated: boolean;
     login: () => void;
-    logout: () => void;
+    logout: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
 
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
-    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(
-        !!Cookies.get("auth"),
-    );
+    const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const router = useRouter();
 
     const login = () => {
@@ -23,11 +20,15 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         router.push("/dashboard");
     };
 
-    const logout = () => {
-        Cookies.remove("auth");
-        setIsAuthenticated(false);
-        router.push("/auth/login");
-        router.refresh();
+    const logout = async () => {
+        try {
+            await postJSON<{ message: string }>("auth/logout");
+        } catch {
+        } finally {
+            setIsAuthenticated(false);
+            router.push("/auth/login");
+            router.refresh();
+        }
     };
 
     return (
@@ -39,8 +40,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
 export const useAuth = () => {
     const context = useContext(AuthContext);
-    if (context === undefined) {
+    if (!context)
         throw new Error("useAuth must be used within an AuthProvider");
-    }
     return context;
 };
