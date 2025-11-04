@@ -1,111 +1,64 @@
-export async function postJSON<T>(
+function parseApiError(data: any, status: number): string {
+    if (data?.error?.message && typeof data.error.message === "string")
+        return data.error.message;
+    if (Array.isArray(data?.error?.messages) && data.error.messages.length)
+        return String(data.error.messages[0]);
+    if (typeof data?.error === "string") return data.error;
+    if (typeof data?.message === "string") return data.message;
+    return `Erreur ${status}`;
+}
+
+function buildApiUrl(path: string): string {
+    if (/^https?:\/\//.test(path)) return path;
+    if (path.startsWith("/api")) return path;
+    if (path.startsWith("api")) return `/${path}`;
+    return `/api${path.startsWith("/") ? path : `/${path}`}`;
+}
+
+async function requestJSON<T>(
+    method: "GET" | "POST" | "PUT" | "DELETE",
     path: string,
     body?: unknown,
     init?: RequestInit,
 ): Promise<T> {
-    const url = path.startsWith("/api")
-        ? path
-        : `/api${path.startsWith("/") ? path : `/${path}`}`;
+    const url = buildApiUrl(path);
+    const headers = new Headers(init?.headers);
+    if (body !== undefined && !headers.has("Content-Type")) {
+        headers.set("Content-Type", "application/json");
+    }
+
     const res = await fetch(url, {
-        method: "POST",
-        headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers ?? {}),
-        },
+        method,
         credentials: "include",
-        body: JSON.stringify(body ?? {}),
+        headers,
+        body: body !== undefined ? JSON.stringify(body) : undefined,
         ...init,
     });
-    let data: unknown = null;
-    try {
-        data = await res.json();
-    } catch {
-        /* ignore */
+
+    // Tolère 204/texte vide, et JSON invalide
+    let data: any = null;
+    const text = await res.text();
+    if (text) {
+        try {
+            data = JSON.parse(text);
+        } catch {
+            data = text;
+        }
     }
-    if (!res.ok) {
-        const message =
-            (data as { message?: string })?.message ||
-            (data as { error?: string })?.error ||
-            `Erreur ${res.status}`;
-        throw new Error(String(message));
-    }
+
+    if (!res.ok) throw new Error(parseApiError(data, res.status));
     return data as T;
 }
 
-export async function getJSON<T>(path: string, init?: RequestInit): Promise<T> {
-    const url = path.startsWith("api")
-        ? path
-        : `api${path.startsWith("/") ? "" : "/"}${path}`;
-    const res = await fetch(url, {
-        method: "GET",
-        credentials: "include",
-        ...(init ?? {}),
-    });
-    let data: unknown = null;
-    try {
-        data = await res.json();
-    } catch {}
-    if (!res.ok) {
-        const message =
-            (data as any)?.message ??
-            (data as any)?.error ??
-            `Erreur ${res.status}`;
-        throw new Error(String(message));
-    }
-    return data as T;
-}
+// Wrappers
+export const getJSON = <T>(path: string, init?: RequestInit) =>
+    requestJSON<T>("GET", path, undefined, init);
 
-export async function putJSON<T>(
-    path: string,
-    body?: unknown,
-    init?: RequestInit,
-): Promise<T> {
-    const url = path.startsWith("api")
-        ? path
-        : `api${path.startsWith("/") ? "" : "/"}${path}`;
-    const res = await fetch(url, {
-        method: "PUT",
-        headers: {
-            "Content-Type": "application/json",
-            ...(init?.headers ?? {}),
-        },
-        credentials: "include",
-        body: body != null ? JSON.stringify(body) : undefined,
-        ...(init ?? {}),
-    });
-    let data: unknown = null;
-    try {
-        data = await res.json();
-    } catch {}
-    if (!res.ok) {
-        const message =
-            (data as any)?.message ??
-            (data as any)?.error ??
-            `Erreur ${res.status}`;
-        throw new Error(String(message));
-    }
-    return data as T;
-}
+export const postJSON = <T>(path: string, body?: unknown, init?: RequestInit) =>
+    requestJSON<T>("POST", path, body, init);
 
-export async function delJSON<T>(path: string, init?: RequestInit): Promise<T> {
-    const url = path.startsWith("api")
-        ? path
-        : `api${path.startsWith("/") ? "" : "/"}${path}`;
-    const res = await fetch(url, {
-        method: "DELETE",
-        credentials: "include",
-        ...(init ?? {}),
-    });
-    let data: unknown = null;
-    try {
-        data = await res.json();
-    } catch {}
-    if (!res.ok) {
-        const message =
-            (data as any)?.message ??
-            (data as any)?.error ??
-            `Erreur ${res.status}`;
-        throw new Error(String(message));
-    }
-    return data as T;
-}
+export const putJSON = <T>(path: string, body?: unknown, init?: RequestInit) =>
+    requestJSON<T>("PUT", path, body, init);
+
+export const delJSON = <T>(path: string, init?: RequestInit) =>
+    requestJSON<T>("DELETE", path, undefined, init);
