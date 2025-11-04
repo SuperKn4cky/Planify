@@ -56,13 +56,16 @@ export default function AccountPage() {
         try {
             setLoadingSave(true);
             const res = await putJSON<UpdateRes>("api/users/me", parsed.data);
-            setSuccess(res.message ?? "Profil mis à jour.");
+            setSuccess("Profil mis à jour.");
         } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Une erreur inattendue est survenue.",
-            );
+            if (
+                err instanceof Error &&
+                err.message === "This email is already in use."
+            ) {
+                setError("Cet email est déjà utilisé.");
+                return;
+            }
+            setError("Une erreur inattendue est survenue.");
         } finally {
             setLoadingSave(false);
         }
