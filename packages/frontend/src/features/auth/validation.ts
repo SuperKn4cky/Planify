@@ -5,7 +5,7 @@ export const loginSchema = z.object({
     password: z.string().min(1, "Mot de passe requis"),
 });
 
-const nameRegex = /^[a-zA-Z'-]+$/;
+export const nameRegex = /^[\p{L}\p{M}' -]+$/u;
 
 export const registerSchema = z
     .object({
