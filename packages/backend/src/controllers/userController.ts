@@ -158,6 +158,7 @@ export default class UserController {
                 throw new AppError("Invalid or missing user id", 400);
             }
             await this.userService.deleteUserByID(Number(id));
+            res.clearCookie("auth", { path: "/" });
             res.status(200).json({
                 message: "User deleted successfully",
             });
