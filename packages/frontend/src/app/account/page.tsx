@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
-import { Mail, User as UserIcon, LogOut, Trash2 } from "lucide-react";
-import { getJSON, putJSON } from "@/lib/api";
+import { Mail, User as UserIcon, LogOut, Trash2, KeyRound } from "lucide-react";
+import { getJSON, putJSON, postJSON } from "@/lib/api";
 import { ApiError } from "@/lib/api";
 import { accountSchema } from "@/features/auth/validation";
 import { useAuth } from "@/contexts/AuthContext";
@@ -22,6 +22,7 @@ export default function AccountPage() {
     });
     const [loadingSave, setLoadingSave] = useState(false);
     const [loadingLogoutAll, setLoadingLogoutAll] = useState(false);
+    const [loadingReset, setLoadingReset] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState<string | null>(null);
     const [openLogout, setOpenLogout] = useState(false);
@@ -142,6 +143,29 @@ export default function AccountPage() {
         }
     }
 
+    async function handlePasswordReset() {
+        setError(null);
+        setSuccess(null);
+        setLoadingReset(true);
+        try {
+            await postJSON<{ message: string }>("auth/password-reset", {
+                email: form.email,
+            });
+            setSuccess("Email de réinitialisation envoyé.");
+        } catch (err) {
+            if (err instanceof Error) {
+                setError(
+                    err.message ||
+                        "Impossible d'envoyer l'email de réinitialisation.",
+                );
+            } else {
+                setError("Impossible d'envoyer l'email de réinitialisation.");
+            }
+        } finally {
+            setLoadingReset(false);
+        }
+    }
+
     return (
         <div className="mx-auto max-w-xl py-8 text-[#0F172A]">
             <h1 className="text-3xl font-semibold text-[#0F172A]">
@@ -234,6 +258,20 @@ export default function AccountPage() {
             </form>
 
             <div className="mt-10 space-y-3">
+                <button
+                    type="button"
+                    onClick={handlePasswordReset}
+                    disabled={loadingReset}
+                    className="flex w-full items-center gap-3 rounded-md border border-[#E5E7EB] px-3 py-2 text-left text-[#0F172A] hover:bg-[#ECEFED] transition-colors"
+                >
+                    <KeyRound className="h-[28px] w-[28px] stroke-[1.8] text-[#0F172A]" />
+                    <span className="text-[16px] leading-6">
+                        {loadingReset
+                            ? "Envoi en cours..."
+                            : "Réinitialiser le mot de passe"}
+                    </span>
+                </button>
+
                 <button
                     type="button"
                     onClick={() => setOpenLogout(true)}
