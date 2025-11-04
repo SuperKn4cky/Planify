@@ -44,7 +44,7 @@ POSTGRES_PASSWORD="your_strong_password"
 DATABASE_URL="postgres://root:your_strong_password@db:5432/Planify"
 
 # Secret pour les jetons JWT (doit être une chaîne de caractères sécurisée)
-# Vous pouvez en générer un avec : openssl rand -hex 32
+# Vous pouvez en générer un avec : openssl rand -hex 32 ou head -c 32 /dev/urandom | base64
 JWT_SECRET="your_super_secret_hs256_key"
 
 # URLs du frontend autorisées par CORS (séparées par des virgules si multiples)
