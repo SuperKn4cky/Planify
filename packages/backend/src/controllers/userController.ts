@@ -102,32 +102,30 @@ export default class UserController {
         }
     }
 
-    public async getUserByID(
+    public async getUser(
         req: Request,
         res: Response,
         next: NextFunction,
     ): Promise<void> {
         try {
-            const { id } = req.params;
-            if (!id || isNaN(Number(id))) {
-                throw new AppError("Invalid or missing user id", 400);
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
             }
-            const user = await this.userService.getUserByID(Number(id));
+            const user = await this.userService.getUserByID(req.user.id);
             res.status(200).json(user.toPublic());
         } catch (error) {
             next(error);
         }
     }
 
-    public async updateUserByID(
+    public async updateUser(
         req: Request,
         res: Response,
         next: NextFunction,
     ): Promise<void> {
         try {
-            const { id } = req.params;
-            if (!id || isNaN(Number(id))) {
-                throw new AppError("Invalid or missing user id", 400);
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
             }
             const updatedData: Partial<User> = {
                 first_name: req.body.first_name,
@@ -135,7 +133,7 @@ export default class UserController {
                 email: req.body.email,
             };
             const updatedUser = await this.userService.updateUserByID(
-                Number(id),
+                req.user.id,
                 updatedData,
             );
             res.status(200).json({
@@ -147,17 +145,16 @@ export default class UserController {
         }
     }
 
-    public async deleteUserByID(
+    public async deleteUser(
         req: Request,
         res: Response,
         next: NextFunction,
     ): Promise<void> {
         try {
-            const { id } = req.params;
-            if (!id || isNaN(Number(id))) {
-                throw new AppError("Invalid or missing user id", 400);
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
             }
-            await this.userService.deleteUserByID(Number(id));
+            await this.userService.deleteUserByID(req.user.id);
             res.clearCookie("auth", { path: "/" });
             res.status(200).json({
                 message: "User deleted successfully",

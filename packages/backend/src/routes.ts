@@ -76,24 +76,21 @@ export default class Routes {
         );
 
         this.app.get(
-            "/users/:id",
+            "/users/me",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
-            this.authMiddleware.authorizeUserId.bind(this.authMiddleware),
-            this.userController.getUserByID.bind(this.userController),
+            this.userController.getUser.bind(this.userController),
         );
 
         this.app.put(
-            "/users/:id",
+            "/users/me",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
-            this.authMiddleware.authorizeUserId.bind(this.authMiddleware),
-            this.userController.updateUserByID.bind(this.userController),
+            this.userController.updateUser.bind(this.userController),
         );
 
         this.app.delete(
-            "/users/:id",
+            "/users/me",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
-            this.authMiddleware.authorizeUserId.bind(this.authMiddleware),
-            this.userController.deleteUserByID.bind(this.userController),
+            this.userController.deleteUser.bind(this.userController),
         );
     }
 }
