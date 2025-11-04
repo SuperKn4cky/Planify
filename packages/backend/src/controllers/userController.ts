@@ -25,11 +25,13 @@ export default class UserController {
                 password: req.body.password,
             });
             const user = await this.userService.createUser(newUser);
+            const ACCESS_TTL_SEC = 7 * 24 * 60 * 60;
             res.cookie("auth", "Bearer " + user.token, {
                 httpOnly: true,
                 secure: isProduction,
                 sameSite: "lax",
                 path: "/",
+                maxAge: ACCESS_TTL_SEC,
             });
             res.status(201).json({
                 message: "User created successfully",
@@ -51,11 +53,13 @@ export default class UserController {
                 throw new AppError("Email and password are required", 400);
             }
             const token = await this.userService.loginUser(email, password);
+            const ACCESS_TTL_SEC = 7 * 24 * 60 * 60;
             res.cookie("auth", "Bearer " + token, {
                 httpOnly: true,
                 secure: isProduction,
                 sameSite: "lax",
                 path: "/",
+                maxAge: ACCESS_TTL_SEC,
             });
             res.status(200).json({
                 message: "Login successful",
