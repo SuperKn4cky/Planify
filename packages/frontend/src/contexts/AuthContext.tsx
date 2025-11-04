@@ -1,12 +1,13 @@
 "use client";
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
-import { postJSON } from "@/lib/api";
+import { postJSON, delJSON } from "@/lib/api";
 
 interface AuthContextType {
     isAuthenticated: boolean;
     login: () => void;
     logout: () => Promise<void>;
+    deleteAccount: () => Promise<void>;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -31,8 +32,20 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const deleteAccount = async () => {
+        try {
+            await delJSON<{ message: string }>("api/users/me");
+        } finally {
+            setIsAuthenticated(false);
+            router.push("auth/register");
+            router.refresh();
+        }
+    };
+
     return (
-        <AuthContext.Provider value={{ isAuthenticated, login, logout }}>
+        <AuthContext.Provider
+            value={{ isAuthenticated, login, logout, deleteAccount }}
+        >
             {children}
         </AuthContext.Provider>
     );
