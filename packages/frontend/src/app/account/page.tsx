@@ -41,13 +41,7 @@ export default function AccountPage() {
                 });
             } catch (error) {
                 if (cancelled) return;
-                if (
-                    error instanceof ApiError &&
-                    (error.status === 401 || error.status === 403)
-                ) {
-                    setError("Session expirée, reconnecte-toi.");
-                    setTimeout(() => router.push("/auth/login"), 800);
-                } else if (error instanceof Error) {
+                if (error instanceof Error) {
                     setError(
                         error.message || "Impossible de charger le profil.",
                     );
@@ -101,14 +95,7 @@ export default function AccountPage() {
         try {
             await logoutAll();
         } catch (error) {
-            if (
-                error instanceof ApiError &&
-                (error.status === 401 || error.status === 403)
-            ) {
-                setError("Session déjà expirée ou révoquée.");
-            } else if (error instanceof ApiError) {
-                setError(error.message);
-            } else if (error instanceof Error) {
+            if (error instanceof Error) {
                 setError(
                     "Une erreur inattendue est survenue.\n" + error.message,
                 );
@@ -126,12 +113,7 @@ export default function AccountPage() {
         try {
             await deleteAccount();
         } catch (error) {
-            if (
-                error instanceof ApiError &&
-                (error.status === 401 || error.status === 403)
-            ) {
-                setError("Session expirée, reconnecte-toi pour confirmer.");
-            } else if (error instanceof ApiError) {
+            if (error instanceof ApiError) {
                 setError(error.message);
             } else if (error instanceof Error) {
                 setError(
