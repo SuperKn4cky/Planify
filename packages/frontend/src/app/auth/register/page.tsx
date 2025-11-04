@@ -53,8 +53,15 @@ export default function RegisterPage() {
             });
             router.push("/");
         } catch (err: unknown) {
-            if (err instanceof Error) {
-                setError(err.message);
+            if (
+                err instanceof Error &&
+                err.message === "This email is already in use."
+            ) {
+                setError("Cet email est déjà utilisé.");
+            } else if (err instanceof Error) {
+                setError(
+                    "Une erreur inattendue est survenue." + "\n" + err.message,
+                );
             } else {
                 setError("Une erreur inattendue est survenue.");
             }
