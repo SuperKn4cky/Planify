@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { UserWithPassword, User } from "../entities/userEntite.js";
+import { UserWithPassword, userSchema, User } from "../entities/userEntite.js";
 import AppError from "../middlewares/errorHandler.js";
 import UserService from "../services/userService.js";
 
@@ -132,9 +132,14 @@ export default class UserController {
                 last_name: req.body.last_name,
                 email: req.body.email,
             };
+            const partialSchema = userSchema
+                .pick({ first_name: true, last_name: true, email: true })
+                .partial();
+            const parsed = partialSchema.parse(updatedData);
+
             const updatedUser = await this.userService.updateUserByID(
                 req.user.id,
-                updatedData,
+                parsed,
             );
             res.status(200).json({
                 message: "User updated successfully",
