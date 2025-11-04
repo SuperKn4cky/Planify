@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+const nameRegex = /^[\p{L}\p{M}' -]+$/u;
+
 export const userSchema = z.object({
     id: z.number().optional(),
     email: z
@@ -10,12 +12,17 @@ export const userSchema = z.object({
         .string()
         .min(2, { message: "First name must be at least 2 characters long" })
         .max(30, { message: "First name must be at most 30 characters long" })
-        .regex(/^[a-zA-Z'-]+$/, { message: "First name must be only letters" }),
+        .regex(nameRegex, {
+            message:
+                "First name must be only letters, spaces, apostrophes or -",
+        }),
     last_name: z
         .string()
         .min(2, { message: "Last name must be at least 2 characters long" })
         .max(30, { message: "Last name must be at most 30 characters long" })
-        .regex(/^[a-zA-Z'-]+$/, { message: "Last name must be only letters" }),
+        .regex(nameRegex, {
+            message: "Last name must be only letters, spaces, apostrophes or -",
+        }),
     revocation_timestamp: z.date().optional(),
 });
 
