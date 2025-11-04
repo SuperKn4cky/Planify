@@ -38,12 +38,8 @@ export default class AuthMiddleware {
 
             next();
         } catch (error) {
-            if (
-                error instanceof AppError &&
-                error.message === "Invalid or expired token"
-            ) {
+            if (error instanceof AppError) {
                 res.clearCookie("auth", { path: "/" });
-            } else if (error instanceof AppError) {
                 res.status(error.status).json({ error: error.message });
             } else {
                 res.status(500).json({ error: "Internal server error" });
