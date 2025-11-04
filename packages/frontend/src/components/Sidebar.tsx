@@ -18,7 +18,7 @@ const top: Item[] = [
     { href: "/contacts", label: "Contacts", icon: Users },
 ];
 
-const bottom: Item[] = [{ href: "/compte", label: "Compte", icon: User }];
+const bottom: Item[] = [{ href: "account", label: "Compte", icon: User }];
 
 function NavLink({ item, active }: { item: Item; active: boolean }) {
     const Icon = item.icon;
