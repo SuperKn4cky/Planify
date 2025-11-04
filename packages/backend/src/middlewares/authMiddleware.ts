@@ -45,21 +45,4 @@ export default class AuthMiddleware {
             }
         }
     }
-
-    public async authorizeUserId(
-        req: Request,
-        res: Response,
-        next: NextFunction,
-    ): Promise<void> {
-        const paramUserId = req.params.id;
-
-        const loggedUserId = req.user?.id?.toString();
-
-        if (paramUserId !== loggedUserId) {
-            res.status(403).json({ error: "Forbidden: Access denied" });
-            return;
-        }
-
-        next();
-    }
 }
