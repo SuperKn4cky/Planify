@@ -65,7 +65,6 @@ export default class Routes {
 
         this.app.post(
             "/auth/logout",
-            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.userController.logoutUser.bind(this.userController),
         );
 

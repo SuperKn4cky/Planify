@@ -75,9 +75,6 @@ export default class UserController {
         next: NextFunction,
     ): Promise<void> {
         try {
-            if (!req.user || !req.user.id) {
-                throw new AppError("User not authenticated", 401);
-            }
             res.clearCookie("auth", { path: "/" });
             res.status(200).json({
                 message: "Logout successful",
@@ -145,7 +142,7 @@ export default class UserController {
                 req.user.id,
                 parsed,
             );
-            res.status(200).json({
+            res.status(204).json({
                 message: "User updated successfully",
                 data: updatedUser.toPublic(),
             });
