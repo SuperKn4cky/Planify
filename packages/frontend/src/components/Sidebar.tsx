@@ -48,14 +48,15 @@ export default function Sidebar() {
         >
             {/* Marque */}
             <div>
-                <div className="flex items-center gap-3">
+                <div className="-mx-6">
                     <Image
                         src={logo}
                         alt="Planify"
                         width={160}
                         height={40}
                         priority
-                        className="h-auto w-[160px] select-none"
+                        className="w-full h-auto select-none"
+                        sizes="212px"
                     />
                 </div>
 
