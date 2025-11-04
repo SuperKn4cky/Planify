@@ -52,3 +52,23 @@ export const registerSchema = z
         message: "Les mots de passe ne correspondent pas",
         path: ["confirm"],
     });
+
+export const accountSchema = z.object({
+    firstname: z
+        .string()
+        .min(2, "Prénom trop court")
+        .max(30, "Prénom trop long")
+        .regex(
+            /^[a-zA-Z-]+$/,
+            "Le prénom ne doit contenir que des lettres, ou -",
+        ),
+    lastname: z
+        .string()
+        .min(2, "Nom trop court")
+        .max(30, "Nom trop long")
+        .regex(/^[a-zA-Z-]+$/, "Le nom ne doit contenir que des lettres, ou -"),
+    email: z
+        .email("Email invalide")
+        .min(5, "Email invalide")
+        .max(60, "Email invalide"),
+});
