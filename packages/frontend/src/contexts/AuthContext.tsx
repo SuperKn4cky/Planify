@@ -7,6 +7,7 @@ interface AuthContextType {
     isAuthenticated: boolean;
     login: () => void;
     logout: () => Promise<void>;
+    logoutAll: () => Promise<void>;
     deleteAccount: () => Promise<void>;
 }
 
@@ -32,6 +33,16 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         }
     };
 
+    const logoutAll = async () => {
+        try {
+            await postJSON<{ message: string }>("auth/logout-all");
+        } finally {
+            setIsAuthenticated(false);
+            router.push("/auth/login");
+            router.refresh();
+        }
+    };
+
     const deleteAccount = async () => {
         try {
             await delJSON<{ message: string }>("api/users/me");
@@ -44,7 +55,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     return (
         <AuthContext.Provider
-            value={{ isAuthenticated, login, logout, deleteAccount }}
+            value={{ isAuthenticated, login, logout, logoutAll, deleteAccount }}
         >
             {children}
         </AuthContext.Provider>

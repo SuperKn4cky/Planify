@@ -13,7 +13,7 @@ type UpdateRes = { message?: string; data?: Me };
 
 export default function AccountPage() {
     const router = useRouter();
-    const { deleteAccount } = useAuth();
+    const { logoutAll, deleteAccount } = useAuth();
     const [form, setForm] = useState<Me>({
         email: "",
         first_name: "",
@@ -68,35 +68,6 @@ export default function AccountPage() {
             setError("Une erreur inattendue est survenue.");
         } finally {
             setLoadingSave(false);
-        }
-    }
-
-    async function logoutAll() {
-        setError(null);
-        setSuccess(null);
-        try {
-            setLoadingLogoutAll(true);
-            const res = await fetch("api/auth/logout-all", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-            });
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                throw new Error(
-                    body?.error ?? body?.message ?? `Erreur ${res.status}`,
-                );
-            }
-            router.push("/auth/login");
-            router.refresh();
-        } catch (err) {
-            setError(
-                err instanceof Error
-                    ? err.message
-                    : "Une erreur inattendue est survenue.",
-            );
-        } finally {
-            setLoadingLogoutAll(false);
         }
     }
 
