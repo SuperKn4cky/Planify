@@ -4,6 +4,7 @@ import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { Mail, User as UserIcon, LogOut, Trash2 } from "lucide-react";
 import { getJSON, putJSON } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 import { accountSchema } from "@/features/auth/validation";
 import { useAuth } from "@/contexts/AuthContext";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
@@ -27,15 +28,36 @@ export default function AccountPage() {
     const [openDelete, setOpenDelete] = useState(false);
 
     useEffect(() => {
-        getJSON<Me>("api/users/me")
-            .then((me) =>
+        let cancelled = false;
+        (async () => {
+            try {
+                const me = await getJSON<Me>("api/users/me");
+                if (cancelled) return;
                 setForm({
                     email: me.email ?? "",
                     first_name: me.first_name ?? "",
                     last_name: me.last_name ?? "",
-                }),
-            )
-            .catch(() => router.push("/auth/login"));
+                });
+            } catch (error) {
+                if (cancelled) return;
+                if (
+                    error instanceof ApiError &&
+                    (error.status === 401 || error.status === 403)
+                ) {
+                    setError("Session expirée, reconnecte-toi.");
+                    setTimeout(() => router.push("/auth/login"), 800);
+                } else if (error instanceof Error) {
+                    setError(
+                        error.message || "Impossible de charger le profil.",
+                    );
+                } else {
+                    setError("Impossible de charger le profil.");
+                }
+            }
+        })();
+        return () => {
+            cancelled = true;
+        };
     }, [router]);
 
     function onChange<K extends keyof Me>(key: K, value: Me[K]) {
@@ -55,7 +77,7 @@ export default function AccountPage() {
         }
         try {
             setLoadingSave(true);
-            const res = await putJSON<UpdateRes>("api/users/me", parsed.data);
+            await putJSON<UpdateRes>("api/users/me", parsed.data);
             setSuccess("Profil mis à jour.");
         } catch (err) {
             if (
@@ -68,6 +90,55 @@ export default function AccountPage() {
             setError("Une erreur inattendue est survenue.");
         } finally {
             setLoadingSave(false);
+        }
+    }
+
+    async function handleLogoutAll() {
+        setError(null);
+        setSuccess(null);
+        setLoadingLogoutAll(true);
+        try {
+            await logoutAll();
+        } catch (error) {
+            if (
+                error instanceof ApiError &&
+                (error.status === 401 || error.status === 403)
+            ) {
+                setError("Session déjà expirée ou révoquée.");
+            } else if (error instanceof ApiError) {
+                setError(error.message);
+            } else if (error instanceof Error) {
+                setError(
+                    "Une erreur inattendue est survenue.\n" + error.message,
+                );
+            } else {
+                setError("Une erreur inattendue est survenue.");
+            }
+        } finally {
+            setLoadingLogoutAll(false);
+        }
+    }
+
+    async function handleDeleteAccount() {
+        setError(null);
+        setSuccess(null);
+        try {
+            await deleteAccount();
+        } catch (error) {
+            if (
+                error instanceof ApiError &&
+                (error.status === 401 || error.status === 403)
+            ) {
+                setError("Session expirée, reconnecte-toi pour confirmer.");
+            } else if (error instanceof ApiError) {
+                setError(error.message);
+            } else if (error instanceof Error) {
+                setError(
+                    "Une erreur inattendue est survenue.\n" + error.message,
+                );
+            } else {
+                setError("Une erreur inattendue est survenue.");
+            }
         }
     }
 
@@ -191,22 +262,21 @@ export default function AccountPage() {
                 <ConfirmDialog
                     open={openLogout}
                     onClose={() => setOpenLogout(false)}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                         setOpenLogout(false);
-                        logoutAll();
+                        await handleLogoutAll();
                     }}
                     title="Déconnecter tous les appareils ?"
-                    description="Tu seras déconnecté(e) de toutes les sessions actives immédiatement."
+                    description="Tu seras déconnecté·e de toutes les sessions actives immédiatement."
                     confirmLabel="Déconnecter"
                     cancelLabel="Annuler"
                 />
-
                 <ConfirmDialog
                     open={openDelete}
                     onClose={() => setOpenDelete(false)}
-                    onConfirm={() => {
+                    onConfirm={async () => {
                         setOpenDelete(false);
-                        deleteAccount();
+                        await handleDeleteAccount();
                     }}
                     title="Supprimer ton compte ?"
                     description="Cette action est définitive et supprimera toutes tes données."

@@ -1,3 +1,13 @@
+export class ApiError extends Error {
+    public status: number;
+    public data: unknown;
+    public constructor(message: string, status: number, data?: unknown) {
+        super(message);
+        this.status = status;
+        this.data = data;
+    }
+}
+
 function parseApiError(data: any, status: number): string {
     if (data?.error?.message && typeof data.error.message === "string")
         return data.error.message;
@@ -35,7 +45,6 @@ async function requestJSON<T>(
         ...init,
     });
 
-    // Tolère 204/texte vide, et JSON invalide
     let data: any = null;
     const text = await res.text();
     if (text) {
@@ -46,19 +55,18 @@ async function requestJSON<T>(
         }
     }
 
-    if (!res.ok) throw new Error(parseApiError(data, res.status));
+    if (!res.ok) {
+        const message = parseApiError(data, res.status);
+        throw new ApiError(message, res.status, data);
+    }
     return data as T;
 }
 
-// Wrappers
 export const getJSON = <T>(path: string, init?: RequestInit) =>
     requestJSON<T>("GET", path, undefined, init);
-
 export const postJSON = <T>(path: string, body?: unknown, init?: RequestInit) =>
     requestJSON<T>("POST", path, body, init);
-
 export const putJSON = <T>(path: string, body?: unknown, init?: RequestInit) =>
     requestJSON<T>("PUT", path, body, init);
-
 export const delJSON = <T>(path: string, init?: RequestInit) =>
     requestJSON<T>("DELETE", path, undefined, init);

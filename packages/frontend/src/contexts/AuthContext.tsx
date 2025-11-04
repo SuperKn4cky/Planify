@@ -2,6 +2,7 @@
 import { createContext, useContext, useState, ReactNode } from "react";
 import { useRouter } from "next/navigation";
 import { postJSON, delJSON } from "@/lib/api";
+import { ApiError } from "@/lib/api";
 
 interface AuthContextType {
     isAuthenticated: boolean;
@@ -25,31 +26,36 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const logout = async () => {
         try {
             await postJSON<{ message: string }>("auth/logout");
-        } catch {
-        } finally {
             setIsAuthenticated(false);
             router.push("/auth/login");
             router.refresh();
+        } catch (error) {
+            if (error instanceof ApiError) throw error;
+            throw new Error("Erreur de déconnexion");
         }
     };
 
     const logoutAll = async () => {
         try {
             await postJSON<{ message: string }>("auth/logout-all");
-        } finally {
             setIsAuthenticated(false);
             router.push("/auth/login");
             router.refresh();
+        } catch (error) {
+            if (error instanceof ApiError) throw error;
+            throw new Error("Erreur de déconnexion des sessions");
         }
     };
 
     const deleteAccount = async () => {
         try {
             await delJSON<{ message: string }>("api/users/me");
-        } finally {
             setIsAuthenticated(false);
             router.push("auth/register");
             router.refresh();
+        } catch (error) {
+            if (error instanceof ApiError) throw error;
+            throw new Error("Erreur de suppression du compte");
         }
     };
 
