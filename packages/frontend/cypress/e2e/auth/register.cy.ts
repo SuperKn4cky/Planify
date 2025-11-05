@@ -13,11 +13,10 @@ describe("Parcours Inscription (Register)", () => {
 
     beforeEach(() => {
         cy.clearCookies();
+        cy.visit("/auth/register");
     });
 
     it("bloque la soumission quand l'email est invalide ", () => {
-        cy.visit("/auth/register");
-
         cy.get(ui.firstName).type("John");
         cy.get(ui.lastName).type("Doe");
         cy.get(ui.email).type("not-an-email");
@@ -35,8 +34,6 @@ describe("Parcours Inscription (Register)", () => {
     });
 
     it("affiche une erreur si les mots de passe ne correspondent pas", () => {
-        cy.visit("/auth/register");
-
         cy.fillRegisterForm({
             firstname: "John",
             lastname: "Doe",
@@ -56,8 +53,6 @@ describe("Parcours Inscription (Register)", () => {
     });
 
     it("crée un compte et prouve l'auth via /api/users/me", () => {
-        cy.visit("/auth/register");
-
         const email = uniqueEmail("planify");
 
         cy.fillRegisterForm({
