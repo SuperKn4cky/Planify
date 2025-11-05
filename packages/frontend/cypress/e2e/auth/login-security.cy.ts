@@ -1,6 +1,6 @@
 import { uniqueEmail, validPassword } from "../../support/e2e";
 
-describe("Sécurité - Login (E2E UI)", () => {
+describe("Sécurité - Login", () => {
     const ui = {
         email: "#email",
         password: "#password",
