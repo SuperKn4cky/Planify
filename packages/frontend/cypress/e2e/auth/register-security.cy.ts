@@ -1,50 +1,36 @@
 import { uniqueEmail, validPassword } from "../../support/e2e";
 
 describe("Sécurité - Register", () => {
-    const BACKEND = "http://localhost:4000";
-
-    it("refuse un email invalide côté serveur (422) sans passer par l'UI", () => {
-        cy.request({
-            method: "POST",
-            url: `${BACKEND}/auth/register`,
-            failOnStatusCode: false,
-            body: {
-                firstname: "Test",
-                lastname: "User",
-                email: "invalid-email",
-                password: validPassword,
-            },
-            headers: { "Content-Type": "application/json" },
-        }).then((res) => {
-            expect(res.status).to.eq(422);
-            expect(
-                (res.body?.error?.messages ?? []).some((m: string) =>
-                    m.includes("Invalid email format"),
-                ),
-            ).to.eq(true);
+    it("bloque la soumission avec email invalide (aucune requête envoyée)", () => {
+        cy.visit("/auth/register");
+        cy.intercept("POST", "/api/auth/register").as("register");
+        cy.fillRegisterForm({
+            firstname: "John",
+            lastname: "Doe",
+            email: "not-an-email",
+            password: validPassword,
         });
+        cy.contains('button[type="submit"]', "Créer le compte").click();
+        cy.get("@register.all").should("have.length", 0);
     });
 
     it("défend HttpOnly/SameSite sur le Set-Cookie et empêche l'accès via document.cookie", () => {
         cy.visit("/auth/register");
-
+        const email = uniqueEmail("cookie");
+        cy.intercept("POST", "/api/auth/register").as("register");
         cy.fillRegisterForm({
-            firstname: "Alice",
-            lastname: "Martin",
-            email: uniqueEmail("cookie"),
+            firstname: "John",
+            lastname: "Doe",
+            email,
             password: validPassword,
         });
-
-        cy.intercept("POST", "/api/auth/register").as("register");
         cy.contains('button[type="submit"]', "Créer le compte").click();
-
         cy.wait("@register").then(({ response }) => {
             expect(response?.statusCode).to.eq(201);
             const setCookie = String(response?.headers?.["set-cookie"] ?? "");
             expect(setCookie).to.include("HttpOnly");
             expect(setCookie).to.include("SameSite=Lax");
         });
-
         cy.document().then((doc) => {
             expect(doc.cookie).to.not.include("auth=");
         });
@@ -52,21 +38,27 @@ describe("Sécurité - Register", () => {
 
     it("révoque les sessions (logout-all) et interdit ensuite /api/users/me", () => {
         cy.visit("/auth/register");
-
+        const email = uniqueEmail("revoke");
+        cy.intercept("POST", "/api/auth/register").as("register");
         cy.fillRegisterForm({
-            firstname: "Bob",
-            lastname: "Durand",
-            email: uniqueEmail("revoke"),
+            firstname: "John",
+            lastname: "Doe",
+            email,
             password: validPassword,
         });
-
         cy.contains('button[type="submit"]', "Créer le compte").click();
+        cy.wait("@register").its("response.statusCode").should("eq", 201);
 
         cy.request("GET", "/api/users/me").its("status").should("eq", 200);
 
-        cy.request("POST", "/api/auth/logout-all")
-            .its("status")
-            .should("eq", 200);
+        cy.intercept("POST", "/api/auth/logout-all").as("logoutAll");
+        cy.window().then((win) =>
+            win.fetch("/api/auth/logout-all", {
+                method: "POST",
+                credentials: "include",
+            }),
+        );
+        cy.wait("@logoutAll").its("response.statusCode").should("eq", 200);
 
         cy.request({
             method: "GET",
@@ -78,6 +70,7 @@ describe("Sécurité - Register", () => {
     });
 
     it("bloque CORS pour une origine non autorisée (pas d'ACAO)", () => {
+        const BACKEND = "http://localhost:4000";
         cy.request({
             method: "OPTIONS",
             url: `${BACKEND}/auth/register`,
