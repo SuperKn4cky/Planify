@@ -43,14 +43,6 @@ Cypress.Commands.add("fillLoginForm", ({ email, password }) => {
     if (password) cy.get("#password").type(password);
 });
 
-Cypress.Commands.add("loginViaUI", (email: string, password: string) => {
-    cy.visit("/auth/login");
-    cy.fillLoginForm({ email, password });
-    cy.intercept("POST", "/api/auth/login").as("login");
-    cy.contains('button[type="submit"]', "Connexion").click();
-    cy.wait("@login").its("response.statusCode").should("eq", 200);
-});
-
 Cypress.Commands.add("logout", () => {
     cy.request("POST", "/api/auth/logout").its("status").should("eq", 200);
 });

@@ -31,7 +31,6 @@ declare global {
                 email?: string;
                 password?: string;
             }): Chainable<void>;
-            loginViaUI(email: string, password: string): Chainable<void>;
             logout(): Chainable<void>;
         }
     }
