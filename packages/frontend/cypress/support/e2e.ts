@@ -20,7 +20,19 @@ import "./commands";
 declare global {
     namespace Cypress {
         interface Chainable {
-            fillRegisterForm(user: any): Chainable<void>;
+            fillRegisterForm(user: {
+                firstname?: string;
+                lastname?: string;
+                email?: string;
+                password?: string;
+            }): Chainable<void>;
+
+            fillLoginForm(creds: {
+                email?: string;
+                password?: string;
+            }): Chainable<void>;
+            loginViaUI(email: string, password: string): Chainable<void>;
+            logout(): Chainable<void>;
         }
     }
 }

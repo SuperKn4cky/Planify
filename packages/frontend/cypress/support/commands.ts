@@ -11,15 +11,15 @@
 //
 //
 // -- This is a parent command --
-// Cypress.Commands.add('login', (email, password) => { ... })
+// Cypress.Commands.add("login", (email, password) => { ... })
 //
 //
 // -- This is a child command --
-// Cypress.Commands.add('drag', { prevSubject: 'element'}, (subject, options) => { ... })
+// Cypress.Commands.add("drag", { prevSubject: "element"}, (subject, options) => { ... })
 //
 //
 // -- This is a dual command --
-// Cypress.Commands.add('dismiss', { prevSubject: 'optional'}, (subject, options) => { ... })
+// Cypress.Commands.add("dismiss", { prevSubject: "optional"}, (subject, options) => { ... })
 //
 //
 Cypress.Commands.add("fillRegisterForm", (user) => {
@@ -36,4 +36,21 @@ Cypress.Commands.add("fillRegisterForm", (user) => {
         cy.get("#password").type(user.password);
         cy.get("#confirm").type(user.password);
     }
+});
+
+Cypress.Commands.add("fillLoginForm", ({ email, password }) => {
+    if (email) cy.get("#email").type(email);
+    if (password) cy.get("#password").type(password);
+});
+
+Cypress.Commands.add("loginViaUI", (email: string, password: string) => {
+    cy.visit("/auth/login");
+    cy.fillLoginForm({ email, password });
+    cy.intercept("POST", "/api/auth/login").as("login");
+    cy.contains('button[type="submit"]', "Connexion").click();
+    cy.wait("@login").its("response.statusCode").should("eq", 200);
+});
+
+Cypress.Commands.add("logout", () => {
+    cy.request("POST", "/api/auth/logout").its("status").should("eq", 200);
 });
