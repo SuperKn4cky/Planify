@@ -71,7 +71,7 @@ export default function LoginPage() {
             </div>
 
             {/* Formulaire */}
-            <form onSubmit={onSubmit} className="rounded-xl">
+            <form onSubmit={onSubmit} className="rounded-xl" noValidate>
                 <div className="relative mb-4">
                     <label
                         htmlFor="email"
