@@ -1,7 +1,7 @@
 import { uniqueEmail, validPassword } from "../../support/e2e";
 
 describe("Parcours Inscription (Register)", () => {
-    const registerFormUI = {
+    const ui = {
         firstName: "#first_name",
         lastName: "#last_name",
         email: "#email",
@@ -15,27 +15,26 @@ describe("Parcours Inscription (Register)", () => {
         cy.clearCookies();
     });
 
-    it("bloque la soumission quand l'email est invalide (validation native)", () => {
+    it("bloque la soumission quand l'email est invalide ", () => {
         cy.visit("/auth/register");
 
-        cy.get(registerFormUI.firstName).type("John");
-        cy.get(registerFormUI.lastName).type("Doe");
-        cy.get(registerFormUI.email).type("not-an-email");
-        cy.get(registerFormUI.password).type(validPassword);
-        cy.get(registerFormUI.confirm).type(validPassword);
+        cy.get(ui.firstName).type("John");
+        cy.get(ui.lastName).type("Doe");
+        cy.get(ui.email).type("not-an-email");
+        cy.get(ui.password).type(validPassword);
+        cy.get(ui.confirm).type(validPassword);
 
         cy.intercept("POST", "/api/auth/register").as("register");
 
-        cy.contains(
-            'button[type="submit"]',
-            registerFormUI.submitBtnLabel,
-        ).click();
+        cy.contains('button[type="submit"]', ui.submitBtnLabel).click();
 
-        cy.get(registerFormUI.email).should("match", ":invalid");
+        cy.get(ui.formError)
+            .should("be.visible")
+            .and("contain", "Email invalide");
         cy.get("@register.all").should("have.length", 0);
     });
 
-    it("affiche une erreur si les mots de passe ne correspondent pas (email valide)", () => {
+    it("affiche une erreur si les mots de passe ne correspondent pas", () => {
         cy.visit("/auth/register");
 
         cy.fillRegisterForm({
@@ -43,18 +42,15 @@ describe("Parcours Inscription (Register)", () => {
             lastname: "Doe",
             email: "john.doe@example.com",
         });
-        cy.get(registerFormUI.password).type(validPassword);
-        cy.get(registerFormUI.confirm).type(validPassword + "x");
+        cy.get(ui.password).type(validPassword);
+        cy.get(ui.confirm).type(validPassword + "x");
 
         cy.intercept("POST", "/api/auth/register").as("register");
 
-        cy.contains(
-            'button[type="submit"]',
-            registerFormUI.submitBtnLabel,
-        ).click();
+        cy.contains('button[type="submit"]', ui.submitBtnLabel).click();
 
         cy.get("@register.all").should("have.length", 0);
-        cy.get(registerFormUI.formError)
+        cy.get(ui.formError)
             .should("be.visible")
             .and("contain", "Les mots de passe ne correspondent pas");
     });
@@ -65,18 +61,15 @@ describe("Parcours Inscription (Register)", () => {
         const email = uniqueEmail("planify");
 
         cy.fillRegisterForm({
-            firstname: "Alice",
-            lastname: "Martin",
+            firstname: "John",
+            lastname: "Doe",
             email,
             password: validPassword,
         });
 
         cy.intercept("POST", "/api/auth/register").as("register");
 
-        cy.contains(
-            'button[type="submit"]',
-            registerFormUI.submitBtnLabel,
-        ).click();
+        cy.contains('button[type="submit"]', ui.submitBtnLabel).click();
 
         cy.wait("@register").its("response.statusCode").should("eq", 201);
 
@@ -92,15 +85,12 @@ describe("Parcours Inscription (Register)", () => {
         const fillAndSubmit = () => {
             cy.visit("/auth/register");
             cy.fillRegisterForm({
-                firstname: "Bob",
-                lastname: "Durand",
+                firstname: "John",
+                lastname: "Doe",
                 email,
                 password: validPassword,
             });
-            cy.contains(
-                'button[type="submit"]',
-                registerFormUI.submitBtnLabel,
-            ).click();
+            cy.contains('button[type="submit"]', ui.submitBtnLabel).click();
         };
 
         cy.intercept("POST", "/api/auth/register").as("register1");
@@ -112,7 +102,7 @@ describe("Parcours Inscription (Register)", () => {
         cy.intercept("POST", "/api/auth/register").as("register2");
         fillAndSubmit();
         cy.wait("@register2").its("response.statusCode").should("eq", 400);
-        cy.get(registerFormUI.formError)
+        cy.get(ui.formError)
             .should("be.visible")
             .and("contain", "Cet email est déjà utilisé.");
     });
