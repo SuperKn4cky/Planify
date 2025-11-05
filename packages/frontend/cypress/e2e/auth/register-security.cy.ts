@@ -1,8 +1,11 @@
 import { uniqueEmail, validPassword } from "../../support/e2e";
 
 describe("Sécurité - Register", () => {
-    it("bloque la soumission avec email invalide (aucune requête envoyée)", () => {
+    beforeEach(() => {
         cy.visit("/auth/register");
+    });
+
+    it("bloque la soumission avec email invalide (aucune requête envoyée)", () => {
         cy.intercept("POST", "/api/auth/register").as("register");
         cy.fillRegisterForm({
             firstname: "John",
@@ -15,7 +18,6 @@ describe("Sécurité - Register", () => {
     });
 
     it("défend HttpOnly/SameSite sur le Set-Cookie et empêche l'accès via document.cookie", () => {
-        cy.visit("/auth/register");
         const email = uniqueEmail("cookie");
         cy.intercept("POST", "/api/auth/register").as("register");
         cy.fillRegisterForm({
@@ -37,7 +39,6 @@ describe("Sécurité - Register", () => {
     });
 
     it("révoque les sessions (logout-all) et interdit ensuite /api/users/me", () => {
-        cy.visit("/auth/register");
         const email = uniqueEmail("revoke");
         cy.intercept("POST", "/api/auth/register").as("register");
         cy.fillRegisterForm({
