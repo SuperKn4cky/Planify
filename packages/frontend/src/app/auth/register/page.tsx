@@ -90,7 +90,7 @@ export default function RegisterPage() {
                 </div>
 
                 {/* Formulaire */}
-                <form onSubmit={onSubmit} className="rounded-xl">
+                <form onSubmit={onSubmit} className="rounded-xl" noValidate>
                     {/* Prénom */}
                     <div className="relative mb-4">
                         <label
