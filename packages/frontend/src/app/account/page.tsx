@@ -157,7 +157,7 @@ export default function AccountPage() {
             <form onSubmit={onSubmit} className="mt-8 space-y-5">
                 <div className="relative">
                     <label
-                        htmlFor="firstname"
+                        htmlFor="first_name"
                         className="absolute left-2 -top-2 bg-white px-1 text-sm text-[#6B7280] transition-all duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-[#2D6AE3]"
                     >
                         Prénom
@@ -166,7 +166,7 @@ export default function AccountPage() {
                         <UserIcon className="h-5 w-5" />
                     </div>
                     <input
-                        id="firstname"
+                        id="first_name"
                         value={form.first_name}
                         onChange={(e) => onChange("first_name", e.target.value)}
                         placeholder=" "
@@ -176,7 +176,7 @@ export default function AccountPage() {
 
                 <div className="relative">
                     <label
-                        htmlFor="lastname"
+                        htmlFor="last_name"
                         className="absolute left-2 -top-2 bg-white px-1 text-sm text-[#6B7280] transition-all duration-300 peer-placeholder-shown:top-1/2 peer-placeholder-shown:-translate-y-1/2 peer-placeholder-shown:text-base peer-focus:top-2 peer-focus:translate-y-0 peer-focus:text-sm peer-focus:text-[#2D6AE3]"
                     >
                         Nom
@@ -185,7 +185,7 @@ export default function AccountPage() {
                         <UserIcon className="h-5 w-5" />
                     </div>
                     <input
-                        id="lastname"
+                        id="last_name"
                         value={form.last_name}
                         onChange={(e) => onChange("last_name", e.target.value)}
                         placeholder=" "
