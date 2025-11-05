@@ -34,21 +34,17 @@ Voici un modèle pour votre fichier `.env`. **Assurez-vous de remplacer les vale
 ```ini
 # .env
 
-# Base de données PostgreSQL
-POSTGRES_DB="Planify"
-POSTGRES_USER="root"
-POSTGRES_PASSWORD="your_strong_password"
-
-# URL de connexion à la base de données pour le backend
-# Assurez-vous que 'user' et 'password' correspondent à POSTGRES_USER et POSTGRES_PASSWORD
-DATABASE_URL="postgres://root:your_strong_password@db:5432/Planify"
-
 # Secret pour les jetons JWT (doit être une chaîne de caractères sécurisée)
 # Vous pouvez en générer un avec : openssl rand -hex 32 ou head -c 32 /dev/urandom | base64
 JWT_SECRET="your_super_secret_hs256_key"
 
-# URLs du frontend autorisées par CORS (séparées par des virgules si multiples)
-FRONTEND_URL="http://localhost:3000"
+# Domaine origin pour le reverse proxy et l'url des lien contenu dans les mail
+APP_DOMAIN="your_domain"
+
+# Base de données PostgreSQL
+POSTGRES_DB="Planify"
+POSTGRES_USER="root"
+POSTGRES_PASSWORD="your_strong_password"
 
 # Configuration pgAdmin (optionnel)
 PGADMIN_DEFAULT_EMAIL="admin@example.com"
@@ -60,6 +56,9 @@ SMTP_PORT=587
 SMTP_SECURE=false # true pour le port 465, false pour les autres
 SMTP_USER="user@example.com"
 SMTP_PASS="your_smtp_password"
+
+# Configuration certificat
+ACME_EMAIL="your_email"
 ```
 
 ### 3. Lancer les conteneurs
@@ -72,5 +71,5 @@ docker compose up -d
 
 L'application devrait maintenant être accessible :
 
-- **Frontend**: http://localhost:3000
+- **traefik**: http://localhost:443
 - **pgAdmin**: http://localhost:8080
