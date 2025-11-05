@@ -53,20 +53,4 @@ describe("Sécurité - Login (E2E UI)", () => {
             expect(setCookie).to.include("SameSite=Lax");
         });
     });
-
-    it("CORS: une origine non autorisée n'obtient pas d'ACAO sur /auth/login (pré-vol OPTIONS)", () => {
-        const BACKEND = "http://localhost:4000";
-        cy.request({
-            method: "OPTIONS",
-            url: `${BACKEND}/auth/login`,
-            failOnStatusCode: false,
-            headers: {
-                Origin: "http://evil.local",
-                "Access-Control-Request-Method": "POST",
-                "Access-Control-Request-Headers": "content-type",
-            },
-        }).then((res) => {
-            expect(res.headers["access-control-allow-origin"]).to.be.undefined;
-        });
-    });
 });

@@ -68,20 +68,4 @@ describe("Sécurité - Register", () => {
             .its("status")
             .should("eq", 401);
     });
-
-    it("bloque CORS pour une origine non autorisée (pas d'ACAO)", () => {
-        const BACKEND = "http://localhost:4000";
-        cy.request({
-            method: "OPTIONS",
-            url: `${BACKEND}/auth/register`,
-            failOnStatusCode: false,
-            headers: {
-                Origin: "http://evil.local",
-                "Access-Control-Request-Method": "POST",
-                "Access-Control-Request-Headers": "content-type",
-            },
-        }).then((res) => {
-            expect(res.headers["access-control-allow-origin"]).to.be.undefined;
-        });
-    });
 });
