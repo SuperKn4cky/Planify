@@ -43,7 +43,7 @@ describe("POST /tasks", () => {
         expect(res.body.data).toHaveProperty("id");
     });
 
-    it("retourne 403 si dossier sans droit d’écriture", async () => {
+    it("retourne 403 si dossier sans droit d'écriture", async () => {
         const userData = { first_name: "Jim", last_name: "Beam", email: "jim@example.com", password: "Password123!" };
         const reg = await request(global.app).post("/auth/register").send(userData).expect(201);
         const cookie = reg.headers["set-cookie"];
@@ -51,7 +51,6 @@ describe("POST /tasks", () => {
         const insertedFolders = await global.db.insert(folders).values({ name: "Dossier A" }).returning();
         const folderId = insertedFolders[0].id;
 
-        // Pas d’entrée users_own_folders => pas d’accès
         const res = await request(global.app).post("/tasks").set("Cookie", cookie).send({
             title: "Essai",
             folder_id: folderId,
