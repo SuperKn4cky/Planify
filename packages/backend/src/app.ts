@@ -44,7 +44,7 @@ export class WebApp {
         this.pool = pool;
         const routes = new Routes(this.app, this.db, this.jwtSecret);
 
-        await routes.register();
+        routes.register();
         this.app.use(errorHandler);
     }
 
