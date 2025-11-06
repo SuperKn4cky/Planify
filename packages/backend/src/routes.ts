@@ -4,6 +4,8 @@ import AuthMiddleware from "./middlewares/authMiddleware.js";
 import AuthService from "./services/authService.js";
 import UserController from "./controllers/userController.js";
 import UserService from "./services/userService.js";
+import TaskController from "./controllers/taskController.js";
+import TaskService from "./services/taskService.js";
 
 export default class Routes {
     private app: express.Application;
@@ -15,6 +17,9 @@ export default class Routes {
 
     private userController: UserController;
     private userService: UserService;
+
+    private taskService: TaskService;
+    private taskController: TaskController;
 
     public constructor(app: express.Application, db: DB, jwtSecret: string) {
         this.app = app;
@@ -32,11 +37,17 @@ export default class Routes {
         this.authMiddleware = new AuthMiddleware(this.authService);
 
         this.userController = new UserController(this.userService);
+
+        this.taskService = new TaskService(this.db);
+        this.taskController = new TaskController(this.taskService);
     }
 
     public register(): void {
         // User routes
         this.userRoutes();
+
+        // Task routes
+        this.tasksRoutes();
 
         // Health check endpoint
         this.app.get("/health", (req: Request, res: Response) => {
@@ -90,6 +101,14 @@ export default class Routes {
             "/users/me",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.userController.deleteUser.bind(this.userController),
+        );
+    }
+
+    private tasksRoutes(): void {
+        this.app.post(
+            "/tasks",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.createTask.bind(this.taskController),
         );
     }
 }
