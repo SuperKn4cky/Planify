@@ -29,6 +29,9 @@ describe("AuthMiddleware", () => {
         mockResponse = {
             status: jest.fn<(code: number) => Response>().mockReturnThis(),
             json: jest.fn<(body: any) => Response>().mockReturnThis(),
+            clearCookie: jest
+                .fn<(name: string, options?: any) => Response>()
+                .mockReturnThis(),
         };
         mockNext = jest.fn();
         jest.clearAllMocks();
