@@ -33,7 +33,7 @@ describe("/account - profil, MAJ, logout-all, suppression", () => {
         cy.visit("/account");
         cy.wait("@me").its("response.statusCode").should("eq", 200);
 
-        cy.get("main, [role='main']")
+        cy.get('main, [role="main"]')
             .first()
             .within(() => {
                 cy.get("#first_name").should("be.visible");
@@ -103,7 +103,7 @@ describe("/account - profil, MAJ, logout-all, suppression", () => {
 
         cy.contains("button", "Déconnecter tous les appareils").click();
 
-        cy.get("[role='dialog']")
+        cy.get('[role="dialog"]')
             .should("be.visible")
             .contains("button", "Déconnecter")
             .click();
@@ -128,7 +128,7 @@ describe("/account - profil, MAJ, logout-all, suppression", () => {
 
         cy.contains("button", "Supprimer mon compte").click();
 
-        cy.get("[role='dialog']")
+        cy.get('[role="dialog"]')
             .should("be.visible")
             .contains("button", "Supprimer")
             .click();
