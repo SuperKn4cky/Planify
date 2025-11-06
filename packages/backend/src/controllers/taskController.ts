@@ -14,7 +14,7 @@ export default class TaskController {
         try {
             if (!req.user?.id) throw new AppError("User not authenticated", 401);
             const input = new NewTask({
-                title: req.body.title,
+                title: req.body.title ?? "",
                 description: req.body.description,
                 folder_id: req.body.folder_id,
                 responsible_user: req.body.responsible_user,
