@@ -1,5 +1,5 @@
 import { NextFunction, Request, Response } from "express";
-import { UserWithPassword, userSchema, User } from "../entities/userEntite.js";
+import { UserWithPassword, userSchema, User } from "../DTO/userDTO.js";
 import AppError from "../middlewares/errorHandler.js";
 import UserService from "../services/userService.js";
 

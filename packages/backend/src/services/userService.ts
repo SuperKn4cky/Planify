@@ -1,7 +1,7 @@
 import { eq } from "drizzle-orm";
 import { DrizzleQueryError } from "drizzle-orm";
 import { users } from "../db/schema.js";
-import { User, UserWithPassword } from "../entities/userEntite.js";
+import { User, UserWithPassword } from "../DTO/userDTO.js";
 import type { DB } from "../db/drizzle.js";
 import AppError from "../middlewares/errorHandler.js";
 import AuthService from "./authService.js";
