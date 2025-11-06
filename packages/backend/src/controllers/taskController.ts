@@ -10,9 +10,14 @@ export default class TaskController {
         this.taskService = taskService;
     }
 
-    public async createTask(req: Request, res: Response, next: NextFunction): Promise<void> {
+    public async createTask(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
         try {
-            if (!req.user?.id) throw new AppError("User not authenticated", 401);
+            if (!req.user?.id)
+                throw new AppError("User not authenticated", 401);
             const input = new NewTask({
                 title: req.body.title ?? "",
                 description: req.body.description,
@@ -27,6 +32,28 @@ export default class TaskController {
                 message: "Task created successfully",
                 data: task.toPublic(),
             });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async deleteTask(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id)
+                throw new AppError("User not authenticated", 401);
+
+            const rawId = req.params.id;
+            const id = Number.parseInt(rawId, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid task id", 400);
+            }
+
+            await this.taskService.deleteTaskByID(id, req.user.id);
+            res.status(200).json({ message: "Task deleted successfully" });
         } catch (error) {
             next(error);
         }

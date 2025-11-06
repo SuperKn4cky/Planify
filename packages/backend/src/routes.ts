@@ -110,5 +110,11 @@ export default class Routes {
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskController.createTask.bind(this.taskController),
         );
+
+        this.app.delete(
+            "/tasks/:id",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.deleteTask.bind(this.taskController),
+        );
     }
 }

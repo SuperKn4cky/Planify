@@ -53,6 +53,30 @@ export default class TaskService {
             throw new AppError("Responsible user not found", 400);
     }
 
+    private async ensureTaskWriteAccess(
+        taskId: number,
+        userId: number,
+    ): Promise<void> {
+        const res = await this.db
+            .select({ permission: users_own_tasks.permission })
+            .from(users_own_tasks)
+            .where(
+                and(
+                    eq(users_own_tasks.task_id, taskId),
+                    eq(users_own_tasks.user_id, userId),
+                ),
+            )
+            .limit(1);
+
+        if (res.length === 0) {
+            throw new AppError("You do not have permission on this task", 403);
+        }
+        const perm = res[0].permission;
+        if (perm === "read") {
+            throw new AppError("Task is read-only for this user", 403);
+        }
+    }
+
     public async createTask(
         payload: NewTask,
         creatorUserId: number,
@@ -102,6 +126,29 @@ export default class TaskService {
         } catch (error) {
             if (error instanceof AppError) throw error;
             throw new AppError("Task creation failed", 500);
+        }
+    }
+
+    public async deleteTaskByID(taskId: number, userId: number): Promise<void> {
+        const exists = await this.db
+            .select({ id: tasks.id })
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+
+        if (exists.length === 0) {
+            throw new AppError("Task not found", 404);
+        }
+
+        await this.ensureTaskWriteAccess(taskId, userId);
+
+        const result = await this.db
+            .delete(tasks)
+            .where(eq(tasks.id, taskId))
+            .returning();
+        console.log("result del", result);
+        if (result.length === 0) {
+            throw new AppError("Task not found", 404);
         }
     }
 }
