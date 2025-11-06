@@ -4,7 +4,10 @@ export const statusValues = ["todo", "doing", "done"] as const;
 
 export const taskSchema = z.object({
     id: z.number().optional(),
-    title: z.string().min(1, { message: "Title is required" }).max(60, { message: "Title must be at most 60 characters long" }),
+    title: z
+        .string()
+        .min(1, { message: "Title is required" })
+        .max(60, { message: "Title must be at most 60 characters long" }),
     description: z.string().max(255, { message: "Description must be at most 255 characters long" }).optional().nullable(),
     folder_id: z.number().int().positive().optional().nullable(),
     responsible_user: z.number().int().positive().optional().nullable(),
@@ -47,6 +50,7 @@ export const newTaskSchema = taskSchema.omit({ id: true });
 
 export class NewTask extends Task {
     public constructor(data: unknown) {
+        console.log("data", data);
         const parsed = newTaskSchema.safeParse(data);
         if (!parsed.success) throw parsed.error;
         super(parsed.data);
