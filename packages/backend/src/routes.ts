@@ -56,6 +56,7 @@ export default class Routes {
 
         // 404 handler
         this.app.use((req: Request, res: Response) => {
+            console.log("404 Not Found:", req.originalUrl);
             res.status(404).json({
                 error: "This resource does not exist.",
                 req: req.originalUrl,
