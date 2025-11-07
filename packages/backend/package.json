@@ -5,7 +5,7 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv -e ../../.env nodemon",
-    "build": "rm -rf dist && tsc",
+    "build": "rm -rf dist && tsc -p tsconfig.build.json",
     "start": "dotenv -e ../../.env node dist/app.js",
     "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest --runInBand --detectOpenHandles",
     "drizzle:push": "dotenv -e ../../.env drizzle-kit push"
