@@ -7,7 +7,8 @@
     "dev": "dotenv -e ../../.env nodemon",
     "build": "yarn tsc",
     "start": "dotenv -e ../../.env node dist/app.js",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest"
+    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest",
+    "drizzle:push": "dotenv -e ../../.env drizzle-kit push"
   },
   "dependencies": {
     "argon2": "^0.44.0",
