@@ -25,12 +25,7 @@ describe("POST /tasks", () => {
     });
 
     it("retourne 422 si title manquant", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -46,12 +41,7 @@ describe("POST /tasks", () => {
     });
 
     it("retourne 201 et crée la tâche", async () => {
-        const userData = {
-            first_name: "Janet",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -78,12 +68,7 @@ describe("POST /tasks", () => {
     });
 
     it("retourne 403 si dossier sans droit d'écriture", async () => {
-        const userData = {
-            first_name: "Jimmy",
-            last_name: "Beams",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -127,12 +112,7 @@ describe("DELETE /tasks/:id", () => {
     });
 
     it("retourne 400 si id invalide", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -147,12 +127,7 @@ describe("DELETE /tasks/:id", () => {
     });
 
     it("retourne 404 si la tâche n'existe pas", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -167,12 +142,7 @@ describe("DELETE /tasks/:id", () => {
     });
 
     it("supprime la tâche et retourne 200", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const reg = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -201,18 +171,8 @@ describe("DELETE /tasks/:id", () => {
     });
 
     it("retourne 403 si l'utilisateur n'a pas de permission sur la tâche", async () => {
-        const a = {
-            first_name: "Test",
-            last_name: "User",
-            email: "a@example.com",
-            password: "Password123!",
-        };
-        const b = {
-            first_name: "Test",
-            last_name: "User",
-            email: "b@example.com",
-            password: "Password123!",
-        };
+        const a = newUser({ email_prefix: "a" });
+        const b = newUser({ email_prefix: "b" });
 
         const regA = await request(global.app)
             .post("/auth/register")

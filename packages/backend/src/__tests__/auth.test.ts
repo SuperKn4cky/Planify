@@ -45,12 +45,7 @@ describe("POST /auth/register", () => {
     });
 
     it("devrait retourner 201, les détails de l'utilisateur pour un enregistrement réussi et un token", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const response = await request(global.app)
             .post("/auth/register")
             .send(userData);
@@ -103,12 +98,7 @@ describe("POST /auth/login", () => {
     });
 
     it("devrait retourner 200 et un token pour une connexion réussie", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -140,12 +130,7 @@ describe("POST /auth/logout-all", () => {
     });
 
     it("devrait retourner 200 pour une déconnexion réussie", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const registerResponse = await request(global.app)
             .post("/auth/register")
             .send(userData)
@@ -165,12 +150,7 @@ describe("POST /auth/logout-all", () => {
     });
 
     it("devrait retourner 401 et le message 'Token has been revoked' pour un token révoqué", async () => {
-        const userData = {
-            first_name: "Test",
-            last_name: "User",
-            email: "test@example.com",
-            password: "Password123!",
-        };
+        const userData = newUser();
         const registerResponse = await request(global.app)
             .post("/auth/register")
             .send(userData)
