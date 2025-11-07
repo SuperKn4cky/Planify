@@ -30,7 +30,7 @@ describe("POST /tasks", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const res = await request(global.app)
             .post("/tasks")
@@ -46,7 +46,7 @@ describe("POST /tasks", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const res = await request(global.app)
             .post("/tasks")
@@ -73,7 +73,7 @@ describe("POST /tasks", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const insertedFolders = await global.db
             .insert(folders)
@@ -117,7 +117,7 @@ describe("DELETE /tasks/:id", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const res = await request(global.app)
             .delete("/tasks/abc")
@@ -132,7 +132,7 @@ describe("DELETE /tasks/:id", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const res = await request(global.app)
             .delete("/tasks/999999")
@@ -147,7 +147,7 @@ describe("DELETE /tasks/:id", () => {
             .post("/auth/register")
             .send(userData)
             .expect(201);
-        const cookie = reg.headers["set-cookie"];
+        const cookie = reg.headers["set-cookie"][0].split(";")[0];
 
         const create = await request(global.app)
             .post("/tasks")
@@ -178,7 +178,7 @@ describe("DELETE /tasks/:id", () => {
             .post("/auth/register")
             .send(a)
             .expect(201);
-        const cookieA = regA.headers["set-cookie"];
+        const cookieA = regA.headers["set-cookie"][0].split(";")[0];
 
         const created = await request(global.app)
             .post("/tasks")
@@ -192,7 +192,7 @@ describe("DELETE /tasks/:id", () => {
             .post("/auth/register")
             .send(b)
             .expect(201);
-        const cookieB = regB.headers["set-cookie"];
+        const cookieB = regB.headers["set-cookie"][0].split(";")[0];
 
         const res = await request(global.app)
             .delete(`/tasks/${taskId}`)

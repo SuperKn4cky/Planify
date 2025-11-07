@@ -1,5 +1,3 @@
-import { WebApp } from "../app.js";
-
 const validPassword = "Secure123456@";
 const uniqueEmail = (prefix: string = "user") => {
     const random = Math.random().toString(36).substring(2, 15);
@@ -25,25 +23,8 @@ const newUser = ({
     };
 };
 
-beforeAll(async () => {
-    const webAppInstance = new WebApp();
-    await webAppInstance.init();
-
-    global.webAppInstance = webAppInstance;
-    global.app = webAppInstance.getApp();
-    global.db = webAppInstance.getDb();
-    global.pool = webAppInstance.getPool();
-
-    Object.assign(global, {
-        validPassword,
-        uniqueEmail,
-        newUser,
-    });
-});
-
-afterAll(async () => {
-    await global.webAppInstance.close();
-
-    delete process.env.NODE_ENV;
-    delete process.env.DATABASE_URL;
+Object.assign(global, {
+    validPassword,
+    uniqueEmail,
+    newUser,
 });

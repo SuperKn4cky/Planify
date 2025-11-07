@@ -146,7 +146,6 @@ export default class TaskService {
             .delete(tasks)
             .where(eq(tasks.id, taskId))
             .returning();
-        console.log("result del", result);
         if (result.length === 0) {
             throw new AppError("Task not found", 404);
         }

@@ -5,9 +5,9 @@
   "type": "module",
   "scripts": {
     "dev": "dotenv -e ../../.env nodemon",
-    "build": "yarn tsc",
+    "build": "rm -rf dist dist-tests && tsc -p tsconfig.json && tsc -p tsconfig.tests.json",
     "start": "dotenv -e ../../.env node dist/app.js",
-    "test": "cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest",
+    "test": "yarn build && cross-env NODE_ENV=test NODE_OPTIONS=--experimental-vm-modules dotenv -e ../../.env jest --runInBand --detectOpenHandles",
     "drizzle:push": "dotenv -e ../../.env drizzle-kit push"
   },
   "dependencies": {
