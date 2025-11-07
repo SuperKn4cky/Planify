@@ -1,3 +1,34 @@
+import { WebApp } from "../app.js";
+
+// @ts-ignore
+declare global {
+    var webAppInstance: WebApp;
+    var app: import("express").Application;
+    var db: ReturnType<WebApp["getDb"]>;
+    var pool: import("pg").Pool;
+    var __INITED__: boolean;
+}
+
+beforeAll(async () => {
+    if (global.__INITED__) return;
+
+    const webAppInstance = new WebApp();
+    await webAppInstance.init();
+
+    global.webAppInstance = webAppInstance;
+    global.app = webAppInstance.getApp();
+    global.db = webAppInstance.getDb();
+    global.pool = webAppInstance.getPool();
+
+    global.__INITED__ = true;
+});
+
+afterAll(async () => {
+    if (global.webAppInstance) {
+        await global.webAppInstance.close();
+    }
+});
+
 const validPassword = "Secure123456@";
 const uniqueEmail = (prefix: string = "user") => {
     const random = Math.random().toString(36).substring(2, 15);
