@@ -1,11 +1,6 @@
 import { WebApp } from "../app.js";
 
 beforeAll(async () => {
-    process.env.NODE_ENV = "test";
-    process.env.POSTGRES_DB = "Planify";
-    process.env.POSTGRES_USER = "root";
-    process.env.POSTGRES_PASSWORD = "root";
-
     const webAppInstance = new WebApp();
     await webAppInstance.init();
 
