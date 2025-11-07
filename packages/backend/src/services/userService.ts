@@ -118,7 +118,7 @@ export default class UserService {
                 .limit(1);
 
             if (result.length === 0) {
-                throw new AppError("User not found", 404);
+                throw new AppError("User not found", 401);
             }
 
             return new Date(result[0].revocation_timestamp);
