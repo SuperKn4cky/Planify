@@ -64,7 +64,7 @@ jobs:
       - name: Wait for Postgres (safety)
         run: |
           for i in {1..30}; do
-            pg_isready -h localhost -p 5432 -U postgres -d testdb && exit 0
+            pg_isready -h localhost -p 5432 -U "$POSTGRES_USER" -d "$POSTGRES_DB" && exit 0
             sleep 2
           done
           echo "Postgres indisponible" && exit 1
@@ -72,7 +72,7 @@ jobs:
       - name: DB migrate & run tests
         working-directory: packages/backend
         run: |
-          run yarn drizzle-kit generate
+          yarn drizzle-kit generate
           yarn test --ci
         env:
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
