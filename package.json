@@ -9,6 +9,7 @@
     "dev:front": "yarn workspace frontend dev",
     "dev:back": "yarn workspace backend dev",
     "dev": "concurrently \"yarn workspace frontend dev\" \"yarn workspace backend dev\"",
+    "db:migrate": "yarn workspace backend drizzle-kit generate && yarn workspace backend drizzle:push",
     "prepare": "husky",
     "stylecheck": "prettier --check '**/*.{js,jsx,ts,tsx,css,scss,json}'",
     "format": "prettier --write '**/*.{js,jsx,ts,tsx,css,scss,json}' '!db/**'",
