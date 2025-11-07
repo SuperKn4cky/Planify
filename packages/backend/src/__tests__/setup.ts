@@ -2,8 +2,8 @@ import { WebApp } from "../app.js";
 
 const validPassword = "Secure123456@";
 const uniqueEmail = (prefix: string = "user") => {
-    const ts = Date.now();
-    return `${prefix}.${ts}@example.com`;
+    const random = Math.random().toString(36).substring(2, 15);
+    return `${prefix}.${random}@example.com`;
 };
 
 type NewUserOptions = {
