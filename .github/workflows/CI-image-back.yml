@@ -5,7 +5,7 @@ on:
     branches: ["main"]
     paths:
       - "packages/backend/**"
-      - ".github/workflows/backend.yml"
+      - ".github/workflows/CI-image-back.yml"
   workflow_dispatch:
 
 permissions:
@@ -69,11 +69,17 @@ jobs:
           done
           echo "Postgres indisponible" && exit 1
 
-      - name: DB migrate & run tests
+      - name: DB migrate
         working-directory: packages/backend
-        run: |
-          yarn drizzle-kit generate
-          yarn test --ci
+        run: yarn drizzle-kit generate
+        env:
+          POSTGRES_USER: ${{ env.POSTGRES_USER }}
+          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
+          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+
+      - name: Run tests
+        working-directory: packages/backend
+        run: yarn test --ci
         env:
           JWT_SECRET: "JWT_test_key"
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
