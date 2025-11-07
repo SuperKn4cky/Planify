@@ -34,6 +34,7 @@ jobs:
       POSTGRES_DB: test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
+      DATABASE_URL: postgres://${{ env.POSTGRES_USER}}:${{ env.POSTGRES_PASSWORD}}@db:5432/${{ env.POSTGRES_DB}}
 
     services:
       db:
@@ -73,18 +74,14 @@ jobs:
         working-directory: packages/backend
         run: yarn drizzle-kit generate
         env:
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          DATABASE_URL: ${{ env.DATABASE_URL}}
 
       - name: Run tests
         working-directory: packages/backend
         run: yarn test --ci
         env:
           JWT_SECRET: "JWT_test_key"
-          POSTGRES_USER: ${{ env.POSTGRES_USER }}
-          POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
-          POSTGRES_DB: ${{ env.POSTGRES_DB }}
+          DATABASE_URL: ${{ env.DATABASE_URL}}
 
   build_and_push:
     runs-on: ubuntu-latest
