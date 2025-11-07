@@ -46,6 +46,8 @@ POSTGRES_DB="Planify"
 POSTGRES_USER="root"
 POSTGRES_PASSWORD="your_strong_password"
 
+DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}
+
 # Configuration pgAdmin (optionnel)
 PGADMIN_DEFAULT_EMAIL="admin@example.com"
 PGADMIN_DEFAULT_PASSWORD="admin"
