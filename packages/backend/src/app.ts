@@ -18,12 +18,7 @@ export class WebApp {
 
     public constructor() {
         this.port = parseInt(process.env.PORT || "4000", 10);
-        this.databaseUrl =
-            process.env.POSTGRES_USER &&
-            process.env.POSTGRES_PASSWORD &&
-            process.env.POSTGRES_DB
-                ? `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@db:5432/${process.env.POSTGRES_DB}`
-                : undefined;
+        this.databaseUrl = process.env.DATABASE_URL || undefined;
         this.nodeEnv = process.env.NODE_ENV || "development";
         this.jwtSecret = process.env.JWT_SECRET || undefined;
 
