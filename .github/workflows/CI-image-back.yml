@@ -75,6 +75,7 @@ jobs:
           yarn drizzle-kit generate
           yarn test --ci
         env:
+          JWT_SECRET: "JWT_test_key"
           POSTGRES_USER: ${{ env.POSTGRES_USER }}
           POSTGRES_PASSWORD: ${{ env.POSTGRES_PASSWORD }}
           POSTGRES_DB: ${{ env.POSTGRES_DB }}
