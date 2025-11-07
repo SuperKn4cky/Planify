@@ -34,7 +34,6 @@ jobs:
       POSTGRES_DB: test
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: postgres
-      DATABASE_URL: postgres://${{ env.POSTGRES_USER}}:${{ env.POSTGRES_PASSWORD}}@db:5432/${{ env.POSTGRES_DB}}
 
     services:
       db:
@@ -61,6 +60,9 @@ jobs:
 
       - name: Install deps
         run: yarn install --immutable
+
+      - name: Compose DATABASE_URL
+        run: echo "DATABASE_URL=postgres://$POSTGRES_USER:$POSTGRES_PASSWORD@localhost:5432/$POSTGRES_DB" >> "$GITHUB_ENV"
 
       - name: Wait for Postgres (safety)
         run: |
