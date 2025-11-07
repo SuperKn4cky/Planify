@@ -1,11 +1,6 @@
 import request from "supertest";
-import { users } from "../db/schema.js";
 
 describe("POST /auth/register", () => {
-    beforeEach(async () => {
-        await global.db.delete(users);
-    });
-
     it("devrait retourner 422 et les messages 'Password must be at least 12 characters long', \
             'Password must contain at least one uppercase letter', \
             'Password must contain at least one digit', \
@@ -59,10 +54,6 @@ describe("POST /auth/register", () => {
 });
 
 describe("POST /auth/login", () => {
-    beforeEach(async () => {
-        await global.db.delete(users);
-    });
-
     it("devrait retourner 400 si l'email est manquant", async () => {
         const response = await request(global.app)
             .post("/auth/login")
@@ -116,10 +107,6 @@ describe("POST /auth/login", () => {
 });
 
 describe("POST /auth/logout-all", () => {
-    beforeEach(async () => {
-        await global.db.delete(users);
-    });
-
     it("devrait retourner 401 si l'utilisateur n'est pas authentifié", async () => {
         const response = await request(global.app)
             .post("/auth/logout-all")

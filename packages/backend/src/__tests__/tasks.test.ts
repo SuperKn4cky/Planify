@@ -1,21 +1,7 @@
 import request from "supertest";
-import {
-    users,
-    tasks as tasksTable,
-    users_own_tasks,
-    folders,
-    users_own_folders,
-} from "../db/schema.js";
+import { folders } from "../db/schema.js";
 
 describe("POST /tasks", () => {
-    beforeEach(async () => {
-        await global.db.delete(users_own_tasks);
-        await global.db.delete(tasksTable);
-        await global.db.delete(users_own_folders);
-        await global.db.delete(folders);
-        await global.db.delete(users);
-    });
-
     it("retourne 401 si non authentifié", async () => {
         const res = await request(global.app)
             .post("/tasks")
@@ -102,14 +88,6 @@ describe("POST /tasks", () => {
 });
 
 describe("DELETE /tasks/:id", () => {
-    beforeEach(async () => {
-        await global.db.delete(users_own_tasks);
-        await global.db.delete(tasksTable);
-        await global.db.delete(users_own_folders);
-        await global.db.delete(folders);
-        await global.db.delete(users);
-    });
-
     it("retourne 401 si non authentifié", async () => {
         const res = await request(global.app).delete("/tasks/1");
         expect(res.status).toBe(401);

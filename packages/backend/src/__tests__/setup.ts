@@ -1,13 +1,11 @@
 import { WebApp } from "../app.js";
-
-// @ts-ignore
-declare global {
-    var webAppInstance: WebApp;
-    var app: import("express").Application;
-    var db: ReturnType<WebApp["getDb"]>;
-    var pool: import("pg").Pool;
-    var __INITED__: boolean;
-}
+import {
+    users,
+    tasks as tasksTable,
+    users_own_tasks,
+    folders,
+    users_own_folders,
+} from "../db/schema.js";
 
 beforeAll(async () => {
     if (global.__INITED__) return;
@@ -19,6 +17,12 @@ beforeAll(async () => {
     global.app = webAppInstance.getApp();
     global.db = webAppInstance.getDb();
     global.pool = webAppInstance.getPool();
+
+    await global.db.delete(users_own_tasks);
+    await global.db.delete(tasksTable);
+    await global.db.delete(users_own_folders);
+    await global.db.delete(folders);
+    await global.db.delete(users);
 
     global.__INITED__ = true;
 });
