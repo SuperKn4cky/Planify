@@ -1,0 +1,151 @@
+name: Frontend E2E
+
+on:
+  push:
+    branches: ["main"]
+    paths:
+      - "packages/frontend/**"
+      - "packages/backend/**"
+      - ".github/workflows/CI-e2e-front.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'packages/frontend/**'
+            backend:
+              - 'packages/backend/**'
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      backend: ${{ steps.filter.outputs.backend }}
+
+  e2e:
+    runs-on: ubuntu-latest
+    needs: changes
+    if: needs.changes.outputs.frontend == 'true' || needs.changes.outputs.backend == 'true'
+
+    env:
+      # Postgres
+      POSTGRES_DB: test
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+
+      # Backend
+      JWT_SECRET: JWT_test_key
+      SMTP_HOST: localhost
+      SMTP_PORT: "2525"
+      SMTP_SECURE: "false"
+      SMTP_USER: dummy
+      SMTP_PASS: dummy
+
+      APP_DOMAIN: "localhost"
+
+    services:
+      db:
+        image: postgres:16
+        env:
+          POSTGRES_DB: test
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U postgres -d postgres"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 10
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Setup Yarn 4.10.3
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+
+      - name: Install dependencies (monorepo)
+        run: yarn install --immutable
+
+      - name: Compose DATABASE_URL
+        run: echo "DATABASE_URL=postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@localhost:5432/${POSTGRES_DB}" >> "$GITHUB_ENV"
+
+      - name: Wait for Postgres
+        run: |
+          for i in {1..30}; do
+            pg_isready -h localhost -p 5432 -U ${POSTGRES_USER} -d ${POSTGRES_DB} && exit 0
+            sleep 2
+          done
+          echo "Postgres indisponible" && exit 1
+
+      - name: DB migrate
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+        run: yarn db:migrate
+
+      - name: Build and start backend
+        working-directory: packages/backend
+        env:
+          DATABASE_URL: ${{ env.DATABASE_URL }}
+          JWT_SECRET: ${{ env.JWT_SECRET }}
+          SMTP_HOST: ${{ env.SMTP_HOST }}
+          SMTP_PORT: ${{ env.SMTP_PORT }}
+          SMTP_SECURE: ${{ env.SMTP_SECURE }}
+          SMTP_USER: ${{ env.SMTP_USER }}
+          SMTP_PASS: ${{ env.SMTP_PASS }}
+        run: |
+          yarn build
+          yarn start
+
+      - name: Wait for backend ready
+        run: |
+          for i in {1..60}; do
+            if curl -fsS "http://localhost:4000/health" >/dev/null 2>&1; then
+              echo "Backend OK"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Backend indisponible" && exit 1
+
+      - name: Build and start frontend
+        working-directory: packages/frontend
+        env:
+          NODE_ENV: test
+        run: |
+          yarn build
+          yarn start
+
+      - name: Wait for frontend ready
+        run: |
+          for i in {1..60}; do
+            if curl -fsS "http://localhost:3000/" >/dev/null 2>&1; then
+              echo "Frontend OK"; exit 0
+            fi
+            sleep 2
+          done
+          echo "Frontend indisponible" && exit 1
+
+      - name: Cypress run
+        uses: cypress-io/github-action@v6
+        with:
+          working-directory: packages/frontend
+          browser: chrome
+          headless: true
+
+      - name: Upload Cypress artifacts on failure
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: cypress-artifacts
+          path: |
+            packages/frontend/cypress/videos/**
+            packages/frontend/cypress/screenshots/**
