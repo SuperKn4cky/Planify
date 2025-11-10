@@ -104,7 +104,13 @@ jobs:
           SMTP_PASS: ${{ env.SMTP_PASS }}
         run: |
           yarn build
-          yarn start
+          nohup yarn start >/tmp/backend.log 2>&1 &
+
+      - name: Print backend log on failure
+        if: failure()
+        run: |
+          echo "===== backend.log ====="
+          tail -n +1 /tmp/backend.log || true
 
       - name: Wait for backend ready
         run: |
@@ -122,7 +128,13 @@ jobs:
           NODE_ENV: test
         run: |
           yarn build
-          yarn start
+          nohup yarn start >/tmp/frontend.log 2>&1 &
+
+      - name: Print frontend log on failure
+        if: failure()
+        run: |
+          echo "===== frontend.log ====="
+          tail -n +1 /tmp/frontend.log || true
 
       - name: Wait for frontend ready
         run: |
