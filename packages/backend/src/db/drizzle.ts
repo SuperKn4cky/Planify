@@ -10,10 +10,7 @@ export default async function startDatabase(
 
     if (!databaseUrl) {
         console.error("Database URL is not valid.");
-        throw new Error(
-            "Database URL is not valid: \
-            expected env variables POSTGRES_USER, POSTGRES_PASSWORD, POSTGRES_DB and DATABASE_URL template.",
-        );
+        throw new Error("Database URL is not valid or missing.");
     }
 
     if (
