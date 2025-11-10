@@ -63,11 +63,6 @@ export class WebApp {
     public getPool(): Pool {
         return this.pool;
     }
-
-    public async close(): Promise<void> {
-        await this.pool.end();
-        console.log("Database pool has been closed.");
-    }
 }
 
 async function main() {

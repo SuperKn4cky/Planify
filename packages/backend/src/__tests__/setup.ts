@@ -29,7 +29,7 @@ beforeAll(async () => {
 
 afterAll(async () => {
     if (global.webAppInstance) {
-        await global.webAppInstance.close();
+        await global.pool.end();
     }
 });
 
