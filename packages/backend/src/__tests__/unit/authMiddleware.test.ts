@@ -1,8 +1,8 @@
 import { jest, describe, it, expect, beforeEach } from "@jest/globals";
-import AuthMiddleware from "../middlewares/authMiddleware.js";
-import AuthService from "../services/authService.js";
+import AuthMiddleware from "../../middlewares/authMiddleware.js";
+import AuthService from "../../services/authService.js";
 import { Request, Response, NextFunction } from "express";
-import AppError from "../middlewares/errorHandler.js";
+import AppError from "../../middlewares/errorHandler.js";
 import { JWTPayload } from "jose";
 
 const mockAuthService = {
