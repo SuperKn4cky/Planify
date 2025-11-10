@@ -1,5 +1,5 @@
 import request from "supertest";
-import { folders } from "../../db/schema.js";
+import { folders } from "../../src/db/schema.js";
 
 describe("POST /tasks", () => {
     it("retourne 401 si non authentifié", async () => {

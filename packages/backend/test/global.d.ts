@@ -1,5 +1,5 @@
 import { Application } from "express";
-import { WebApp } from "../app";
+import { WebApp } from "../src/app";
 import { Pool } from "pg";
 
 declare global {

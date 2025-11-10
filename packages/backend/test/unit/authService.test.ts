@@ -6,9 +6,9 @@ import {
     beforeEach,
     afterEach,
 } from "@jest/globals";
-import AuthService from "../../services/authService.js";
-import UserService from "../../services/userService.js";
-import AppError from "../../middlewares/errorHandler.js";
+import AuthService from "../../src/services/authService.js";
+import UserService from "../../src/services/userService.js";
+import AppError from "../../src/middlewares/errorHandler.js";
 import * as jose from "jose";
 
 const mockUserService = {

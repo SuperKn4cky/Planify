@@ -1,11 +1,11 @@
-import { WebApp } from "../app.js";
+import { WebApp } from "../src/app.js";
 import {
     users,
     tasks as tasksTable,
     users_own_tasks,
     folders,
     users_own_folders,
-} from "../db/schema.js";
+} from "../src/db/schema.js";
 
 beforeAll(async () => {
     if (global.__INITED__) return;
