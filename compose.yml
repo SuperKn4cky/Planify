@@ -1,141 +1,138 @@
 networks:
-    edge:
-        driver: bridge
-    app:
-        driver: bridge
+  edge:
+    driver: bridge
+  app:
+    driver: bridge
 
 volumes:
-    pgdata:
-    traefik-acme:
+  pgdata:
+  traefik-acme:
 
 services:
-    reverse-proxy:
-        image: traefik:v3.5.4
-        container_name: planify-proxy
-        command:
-            - --api.dashboard=false
-            - --entrypoints.web.address=:80
-            - --entrypoints.websecure.address=:443
-            # - --entrypoints.web.http.redirections.entryPoint.to=websecure  # Désactivé pour le test local
-            # - --entrypoints.web.http.redirections.entryPoint.scheme=https   # Désactivé pour le test local
-            - --providers.docker=true
-            - --providers.docker.exposedbydefault=false
-            # - --certificatesresolvers.le.acme.tlschallenge=true           # Désactivé pour le test local
-            # - --certificatesresolvers.le.acme.email=${ACME_EMAIL}         # Désactivé pour le test local
-            # - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json # Désactivé pour le test local
-            - --serversTransport.insecureSkipVerify=false
-        ports:
-            - "80:80"
-            - "443:443"
-        security_opt:
-            - no-new-privileges:true
-        cap_drop:
-            - ALL
-        volumes:
-            - /var/run/docker.sock:/var/run/docker.sock:ro
-            - traefik-acme:/letsencrypt
-        networks:
-            - edge
-            - app
-        labels:
-            - "traefik.enable=true"
-            # Middlewares globaux sécurité + RPS limit
-            - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
-            - "traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true"
-            - "traefik.http.middlewares.secure-headers.headers.stsPreload=true"
-            - "traefik.http.middlewares.secure-headers.headers.forceSTSHeader=true"
-            - "traefik.http.middlewares.secure-headers.headers.frameDeny=true"
-            - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=no-referrer"
-            - "traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true"
-            - "traefik.http.middlewares.secure-headers.headers.browserXssFilter=true"
-            - "traefik.http.middlewares.csp.headers.contentSecurityPolicy=\
-              default-src 'self'; \
-              script-src 'self' 'unsafe-inline'; \
-              style-src 'self' 'unsafe-inline'; \
-              img-src 'self' data:; \
-              font-src 'self' data:; \
-              connect-src 'self' http://localhost ws://localhost; \
-              frame-ancestors 'none'"
-            - "traefik.http.middlewares.ratelimit.ratelimit.average=50"
-            - "traefik.http.middlewares.ratelimit.ratelimit.burst=100"
-            # Middleware pour bloquer tout accès direct à /api au niveau proxy
-            - "traefik.http.middlewares.block-api-path.stripprefixregex.regex=/api(/.*)?"
-            - "traefik.http.middlewares.block-api-path.errors.status=403"
-            - "traefik.http.middlewares.block-api-path.errors.service=error-svc"
-            - "traefik.http.middlewares.block-api-path.errors.query=/403.html"
-            # Service d'erreur minimal (renvoi 403)
-            - "traefik.http.services.error-svc.loadbalancer.server.port=65535"
+  reverse-proxy:
+    image: traefik:v3.5.4
+    container_name: planify-proxy
+    command:
+      - --api.dashboard=false
+      - --entrypoints.web.address=:80
+      - --entrypoints.websecure.address=:443
+      # - --entrypoints.web.http.redirections.entryPoint.to=websecure  # Désactivé pour le test local
+      # - --entrypoints.web.http.redirections.entryPoint.scheme=https   # Désactivé pour le test local
+      - --providers.docker=true
+      - --providers.docker.exposedbydefault=false
+      # - --certificatesresolvers.le.acme.tlschallenge=true           # Désactivé pour le test local
+      # - --certificatesresolvers.le.acme.email=${ACME_EMAIL}         # Désactivé pour le test local
+      # - --certificatesresolvers.le.acme.storage=/letsencrypt/acme.json # Désactivé pour le test local
+      - --serversTransport.insecureSkipVerify=false
+    ports:
+      - "80:80"
+      - "443:443"
+    security_opt:
+      - no-new-privileges:true
+    cap_drop:
+      - ALL
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - traefik-acme:/letsencrypt
+    networks:
+      - edge
+      - app
+    labels:
+      - "traefik.enable=true"
+      # Middlewares globaux sécurité + RPS limit
+      - "traefik.http.middlewares.secure-headers.headers.stsSeconds=31536000"
+      - "traefik.http.middlewares.secure-headers.headers.stsIncludeSubdomains=true"
+      - "traefik.http.middlewares.secure-headers.headers.stsPreload=true"
+      - "traefik.http.middlewares.secure-headers.headers.forceSTSHeader=true"
+      - "traefik.http.middlewares.secure-headers.headers.frameDeny=true"
+      - "traefik.http.middlewares.secure-headers.headers.referrerPolicy=no-referrer"
+      - "traefik.http.middlewares.secure-headers.headers.contentTypeNosniff=true"
+      - "traefik.http.middlewares.secure-headers.headers.browserXssFilter=true"
+      - "traefik.http.middlewares.csp.headers.contentSecurityPolicy=\
+        default-src 'self'; \
+        script-src 'self' 'unsafe-inline'; \
+        style-src 'self' 'unsafe-inline'; \
+        img-src 'self' data:; \
+        font-src 'self' data:; \
+        connect-src 'self' http://localhost ws://localhost; \
+        frame-ancestors 'none'"
+      - "traefik.http.middlewares.ratelimit.ratelimit.average=50"
+      - "traefik.http.middlewares.ratelimit.ratelimit.burst=100"
+      # Middleware pour bloquer tout accès direct à /api au niveau proxy
+      - "traefik.http.middlewares.block-api-path.stripprefixregex.regex=/api(/.*)?"
+      - "traefik.http.middlewares.block-api-path.errors.status=403"
+      - "traefik.http.middlewares.block-api-path.errors.service=error-svc"
+      - "traefik.http.middlewares.block-api-path.errors.query=/403.html"
+      # Service d'erreur minimal (renvoi 403)
+      - "traefik.http.services.error-svc.loadbalancer.server.port=65535"
 
-    front:
-        image: superknacky/planify_frontend:latest
-        container_name: Planify-front
-        expose:
-            - "3000"
-        depends_on:
-            - back
-        environment:
-            - NODE_ENV=production
-            - NEXT_PUBLIC_API_BASE=/api
-        networks:
-            - app
-        labels:
-            - "traefik.enable=true"
-            - "traefik.http.routers.front.rule=Host(`${APP_DOMAIN}`)"
-            - "traefik.http.routers.front.entrypoints=web" # Changé de websecure à web
-            # - "traefik.http.routers.front.tls.certresolver=le" # Désactivé pour le test local
-            - "traefik.http.services.front.loadbalancer.server.port=3000"
-            # Appliquer sécurité + rate limit
-            - "traefik.http.routers.front.middlewares=secure-headers,csp,ratelimit"
+  front:
+    image: superknacky/planify_frontend:latest
+    container_name: Planify-front
+    expose:
+      - "3000"
+    depends_on:
+      - back
+    environment:
+      - NODE_ENV=production
+      - NEXT_PUBLIC_API_BASE=/api
+    networks:
+      - app
+    labels:
+      - "traefik.enable=true"
+      - "traefik.http.routers.front.rule=Host(`${APP_DOMAIN}`)"
+      - "traefik.http.routers.front.entrypoints=web" # Changé de websecure à web
+      # - "traefik.http.routers.front.tls.certresolver=le" # Désactivé pour le test local
+      - "traefik.http.services.front.loadbalancer.server.port=3000"
+      # Appliquer sécurité + rate limit
+      - "traefik.http.routers.front.middlewares=secure-headers,csp,ratelimit"
 
-    back:
-        image: superknacky/planify_backend:latest
-        container_name: Planify-back
-        expose:
-            - "4000"
-        environment:
-            - NODE_ENV=production
-            - JWT_SECRET=${JWT_SECRET}
-            - POSTGRES_DB=${POSTGRES_DB}
-            - POSTGRES_USER=${POSTGRES_USER}
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-            - DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
-            - SMTP_HOST=${SMTP_HOST}
-            - SMTP_PORT=${SMTP_PORT}
-            - SMTP_SECURE=${SMTP_SECURE}
-            - SMTP_USER=${SMTP_USER}
-            - SMTP_PASS=${SMTP_PASS}
-        depends_on:
-            - db
-        networks:
-            - app
+  back:
+    image: superknacky/planify_backend:latest
+    container_name: Planify-back
+    expose:
+      - "4000"
+    environment:
+      - NODE_ENV=production
+      - JWT_SECRET=${JWT_SECRET}
+      - DATABASE_URL="postgres://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db:5432/${POSTGRES_DB}"
+      - SMTP_HOST=${SMTP_HOST}
+      - SMTP_PORT=${SMTP_PORT}
+      - SMTP_SECURE=${SMTP_SECURE}
+      - SMTP_USER=${SMTP_USER}
+      - SMTP_PASS=${SMTP_PASS}
+    depends_on:
+      - db
+    networks:
+      - app
 
-    db:
-        image: postgres:16.10-alpine3.22
-        container_name: Planify-postgres
-        restart: always
-        environment:
-            - POSTGRES_DB=${POSTGRES_DB}
-            - POSTGRES_USER=${POSTGRES_USER}
-            - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-        expose:
-            - "5432"
-        volumes:
-            - pgdata:/var/lib/postgresql/data
-        networks:
-            - app
+  db:
+    image: postgres:16.10-alpine3.22
+    container_name: Planify-postgres
+    restart: always
+    environment:
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    expose:
+      - "5432"
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - app
 
-    pgadmin:
-        image: dpage/pgadmin4:latest
-        container_name: Planify-pgadmin
-        restart: always
-        environment:
-            - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
-            - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
-            - PGADMIN_CONFIG_SERVER_MODE=False
-            - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
-        ports:
-            - "8080:80"
-        depends_on:
-            - db
-        networks:
-            - app
+  pgadmin:
+    image: dpage/pgadmin4:latest
+    container_name: Planify-pgadmin
+    restart: always
+    environment:
+      - PGADMIN_DEFAULT_EMAIL=${PGADMIN_DEFAULT_EMAIL}
+      - PGADMIN_DEFAULT_PASSWORD=${PGADMIN_DEFAULT_PASSWORD}
+      - PGADMIN_CONFIG_SERVER_MODE=False
+      - PGADMIN_CONFIG_MASTER_PASSWORD_REQUIRED=False
+    ports:
+      - "8080:80"
+    depends_on:
+      - db
+    networks:
+      - app
