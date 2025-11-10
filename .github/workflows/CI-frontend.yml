@@ -1,4 +1,4 @@
-name: Frontend test and docker image
+name: Frontend (test and docker image)
 
 on:
   push:
