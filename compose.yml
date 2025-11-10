@@ -75,7 +75,6 @@ services:
       - back
     environment:
       - NODE_ENV=production
-      - NEXT_PUBLIC_API_BASE=/api
     networks:
       - app
     labels:
