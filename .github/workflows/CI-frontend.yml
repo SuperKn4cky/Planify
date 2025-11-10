@@ -151,7 +151,6 @@ jobs:
         with:
           working-directory: packages/frontend
           browser: chrome
-          headless: true
 
       - name: Upload Cypress artifacts on failure
         if: failure()
