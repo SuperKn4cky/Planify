@@ -3,7 +3,7 @@ import { z } from "zod";
 export const statusValues = ["todo", "doing", "done"] as const;
 
 export const baseTaskSchema = z.object({
-    id: z.number(),
+    id: z.number().optional(),
     title: z
         .string()
         .min(1, { message: "Title is required" })
@@ -34,9 +34,16 @@ export const taskSchema = baseTaskSchema.extend({
 export const newTaskSchema = baseTaskSchema.omit({ id: true }).extend({
     due_date: z.coerce
         .date()
-        .refine((date) => date > new Date(), {
-            message: "Due date must be in the future",
-        })
+        .refine(
+            (date) => {
+                const today = new Date();
+                today.setHours(0, 0, 0, 0);
+                return date >= today;
+            },
+            {
+                message: "Due date cannot be in the past",
+            },
+        )
         .optional()
         .nullable(),
 });
