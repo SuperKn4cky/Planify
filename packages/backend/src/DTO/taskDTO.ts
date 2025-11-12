@@ -2,8 +2,8 @@ import { z } from "zod";
 
 export const statusValues = ["todo", "doing", "done"] as const;
 
-export const taskSchema = z.object({
-    id: z.number().optional(),
+export const baseTaskSchema = z.object({
+    id: z.number(),
     title: z
         .string()
         .min(1, { message: "Title is required" })
@@ -17,15 +17,28 @@ export const taskSchema = z.object({
         .nullable(),
     folder_id: z.number().int().positive().optional().nullable(),
     responsible_user: z.number().int().positive().optional().nullable(),
-    due_date: z.coerce.date().optional().nullable(),
     status: z.enum(statusValues).optional().default("todo"),
     priority: z
         .number()
         .int()
         .min(1, { message: "Priority must be >= 1" })
-        .max(5, { message: "Priority must be <= 5" })
+        .max(3, { message: "Priority must be <= 3" })
         .optional()
         .default(1),
+});
+
+export const taskSchema = baseTaskSchema.extend({
+    due_date: z.coerce.date().optional().nullable(),
+});
+
+export const newTaskSchema = baseTaskSchema.omit({ id: true }).extend({
+    due_date: z.coerce
+        .date()
+        .refine((date) => date > new Date(), {
+            message: "Due date must be in the future",
+        })
+        .optional()
+        .nullable(),
 });
 
 export class Task {
@@ -38,7 +51,11 @@ export class Task {
     public status?: (typeof statusValues)[number];
     public priority?: number;
 
-    public constructor(data: unknown) {
+    public constructor(data: unknown, skipParse = false) {
+        if (skipParse) {
+            Object.assign(this, data);
+            return;
+        }
         const parsed = taskSchema.safeParse(data);
         if (!parsed.success) throw parsed.error;
         Object.assign(this, parsed.data);
@@ -51,19 +68,17 @@ export class Task {
             description: this.description ?? null,
             folder_id: this.folder_id ?? null,
             responsible_user: this.responsible_user ?? null,
-            due_date: this.due_date ? new Date(this.due_date) : null,
+            due_date: this.due_date ?? null,
             status: this.status ?? "todo",
             priority: this.priority ?? 1,
         };
     }
 }
 
-export const newTaskSchema = taskSchema.omit({ id: true });
-
 export class NewTask extends Task {
     public constructor(data: unknown) {
         const parsed = newTaskSchema.safeParse(data);
         if (!parsed.success) throw parsed.error;
-        super(parsed.data);
+        super(parsed.data, true);
     }
 }
