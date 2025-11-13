@@ -33,7 +33,7 @@ export default function TaskItem({ task, onDelete }: Props) {
 
     return (
         <div className="border-b border-[#E5E7EB] py-5">
-            <div className="flex items-start justify-between gap-4">
+            <div className="flex items-start justify-between gap-4 px-5">
                 <div className="min-w-0">
                     <h3 className="text-16px font-semibold text-[#0F172A]">
                         {task.title}
