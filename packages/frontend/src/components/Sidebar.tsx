@@ -14,7 +14,7 @@ type Item = {
 };
 
 const top: Item[] = [
-    { href: "tasks", label: "Taches", icon: FileCheck },
+    { href: "dashboard", label: "Taches", icon: FileCheck },
     { href: "contacts", label: "Contacts", icon: Users },
 ];
 
