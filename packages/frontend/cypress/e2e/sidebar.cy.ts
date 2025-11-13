@@ -33,7 +33,7 @@ describe("Sidebar - éléments, navigation et déconnexion", () => {
             cy.get(ui.logoAlt).should("be.visible");
             cy.contains("a", ui.linkTaches)
                 .should("exist")
-                .and("have.attr", "href", "tasks");
+                .and("have.attr", "href", "dashboard");
             cy.contains("a", ui.linkContacts)
                 .should("exist")
                 .and("have.attr", "href", "contacts");
@@ -46,14 +46,14 @@ describe("Sidebar - éléments, navigation et déconnexion", () => {
 
     it("redirige correctement en cliquant sur Taches, Contacts et Compte", () => {
         cy.contains("a", ui.linkTaches).click();
-        cy.url().should("include", "/tasks");
+        cy.url().should("include", "/dashboard");
 
-        cy.visit("/dashboard");
+        cy.visit("/");
 
         cy.contains("a", ui.linkContacts).click();
         cy.url().should("include", "/contacts");
 
-        cy.visit("/dashboard");
+        cy.visit("/");
 
         cy.contains("a", ui.linkCompte).click();
         cy.url().should("include", "/account");
