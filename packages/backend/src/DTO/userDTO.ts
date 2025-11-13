@@ -23,7 +23,7 @@ export const userSchema = z.object({
         .regex(nameRegex, {
             message: "Last name must be only letters, spaces, apostrophes or -",
         }),
-    revocation_timestamp: z.date().optional(),
+    revocation_timestamp: z.coerce.date().optional(),
 });
 
 export const UserWithPasswordSchema = userSchema.extend({
