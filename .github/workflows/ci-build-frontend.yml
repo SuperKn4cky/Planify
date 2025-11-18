@@ -1,0 +1,71 @@
+name: Frontend - docker image
+
+on:
+  workflow_run:
+    workflows: ["Frontend - e2e"]
+    branches: ["main"]
+    types:
+      - completed
+
+permissions:
+  contents: read
+
+jobs:
+  changes:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - id: filter
+        uses: dorny/paths-filter@v3
+        with:
+          filters: |
+            frontend:
+              - 'packages/frontend/**'
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+
+  build_and_push:
+    runs-on: ubuntu-latest
+    needs: [changes]
+    if: >
+      github.event.workflow_run.conclusion == 'success' &&
+      needs.changes.outputs.frontend == 'true'
+
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Log in to DockerHub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKER_USERNAME }}
+          password: ${{ secrets.DOCKER_PASSWORD }}
+
+      - name: Enable Corepack and install Yarn 4.10.3
+        run: |
+          corepack enable
+          corepack prepare yarn@4.10.3 --activate
+
+      - name: Generate version from commit count
+        id: version
+        run: |
+          VERSION=$(git rev-list --count HEAD)
+          echo "VERSION=1.${VERSION}" >> $GITHUB_ENV
+
+      - name: Get the current timestamp
+        id: timestamp
+        run: echo "TIMESTAMP=$(date +'%Y%m%d%H')" >> $GITHUB_ENV
+
+      - name: Build Frontend Docker image
+        run: |
+          docker buildx build \
+            --platform linux/amd64 \
+            --file packages/frontend/Dockerfile \
+            --tag ${{ secrets.DOCKER_USERNAME }}/planify_frontend:${{ env.TIMESTAMP }}-v${{ env.VERSION }} \
+            --tag ${{ secrets.DOCKER_USERNAME }}/planify_frontend:latest \
+            --push \
+            .
