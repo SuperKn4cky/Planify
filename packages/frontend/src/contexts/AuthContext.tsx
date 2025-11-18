@@ -76,6 +76,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
             await delJSON<{ message: string }>("api/users/me");
             setIsAuthenticated(false);
             router.push("/auth/register");
+            router.refresh();
         } catch (error) {
             if (error instanceof ApiError) throw error;
             throw new Error("Erreur de suppression du compte");
