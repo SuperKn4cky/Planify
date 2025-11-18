@@ -136,13 +136,13 @@ describe("/account - profil, MAJ, logout-all, suppression", () => {
         cy.wait("@delMe").its("response.statusCode").should("eq", 200);
 
         cy.url().then((url) => {
-            cy.log("URL juste après DELETE:", url);
+            cy.log(`URL juste après DELETE: ${url}`);
         });
 
         cy.wait(500);
 
         cy.url().then((url) => {
-            cy.log("URL 500ms après:", url);
+            cy.log(`URL 500ms après: ${url}`);
         });
 
         cy.url().should("include", "auth/register");
