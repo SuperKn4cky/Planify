@@ -1,4 +1,5 @@
 import request from "supertest";
+import * as jose from "jose";
 
 function getSetCookieArray(headers: Record<string, unknown>): string[] {
     const h = headers["set-cookie"] as string[] | string | undefined;
@@ -132,12 +133,10 @@ describe("POST /auth/login", () => {
     });
 
     it("POST /auth/login -> 401 si identifiants invalides", async () => {
-        const res = await request(global.app)
-            .post("/auth/login")
-            .send({
-                email: "not-registered@example.com",
-                password: "WrongPassword!23456",
-            });
+        const res = await request(global.app).post("/auth/login").send({
+            email: "not-registered@example.com",
+            password: "WrongPassword!23456",
+        });
         expect(res.status).toBe(401);
         expect(res.body?.error?.message).toBe("Invalid email or password");
     });
@@ -257,4 +256,34 @@ describe("POST /auth/logout & /auth/logout-all", () => {
         expect(me.status).toBe(401);
         expect(me.body?.error).toBe("Token has been revoked");
     });
+});
+
+describe("Jeton avec signature invalide", () => {
+    it(
+        "GET /users/me -> 401 et clearCookie " +
+            "quand le JWT est signé avec une autre clé que celle du backend",
+        async () => {
+            const wrongSecret = new TextEncoder().encode(
+                "not_the_real_backend_secret",
+            );
+            const fakeToken = await new jose.SignJWT({ user_id: 123 })
+                .setProtectedHeader({ alg: "HS256", typ: "JWT" })
+                .setIssuedAt()
+                .setExpirationTime("1h")
+                .sign(wrongSecret);
+
+            const res = await request(global.app)
+                .get("/users/me")
+                .set("Cookie", [`auth=Bearer ${fakeToken}`]);
+
+            expect(res.status).toBe(401);
+            expect(res.body.error).toBe("Invalid or expired token");
+
+            const cookies = getSetCookieArray(res.headers);
+            expect(cookies.length).toBeGreaterThan(0);
+            expect(cookies[0]).toBe(
+                "auth=; Path=/; Expires=Thu, 01 Jan 1970 00:00:00 GMT",
+            );
+        },
+    );
 });
