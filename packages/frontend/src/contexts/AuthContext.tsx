@@ -1,7 +1,14 @@
 "use client";
-import { createContext, useContext, useState, ReactNode } from "react";
+
+import {
+    createContext,
+    useContext,
+    useState,
+    ReactNode,
+    useEffect,
+} from "react";
 import { useRouter } from "next/navigation";
-import { postJSON, delJSON } from "@/lib/api";
+import { postJSON, delJSON, getJSON } from "@/lib/api";
 import { ApiError } from "@/lib/api";
 
 interface AuthContextType {
@@ -17,6 +24,23 @@ const AuthContext = createContext<AuthContextType | undefined>(undefined);
 export const AuthProvider = ({ children }: { children: ReactNode }) => {
     const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false);
     const router = useRouter();
+
+    useEffect(() => {
+        let cancelled = false;
+
+        (async () => {
+            try {
+                await getJSON("api/users/me");
+                if (!cancelled) setIsAuthenticated(true);
+            } catch {
+                if (!cancelled) setIsAuthenticated(false);
+            }
+        })();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
 
     const login = () => {
         setIsAuthenticated(true);
@@ -51,7 +75,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
         try {
             await delJSON<{ message: string }>("api/users/me");
             setIsAuthenticated(false);
-            router.push("auth/register");
+            router.push("/auth/register");
             router.refresh();
         } catch (error) {
             if (error instanceof ApiError) throw error;
