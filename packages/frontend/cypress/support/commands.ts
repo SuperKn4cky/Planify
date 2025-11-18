@@ -46,7 +46,3 @@ Cypress.Commands.add("fillLoginForm", ({ email, password }) => {
 Cypress.Commands.add("logout", () => {
     cy.request("POST", "/api/auth/logout").its("status").should("eq", 200);
 });
-
-Cypress.Commands.overwrite("log", (subject, message) => {
-    return cy.task("log", message);
-});

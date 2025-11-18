@@ -10,22 +10,11 @@ export function proxy(req: NextRequest) {
 
     const isPublicPath = publicPaths.has(pathname);
 
-    console.log(
-        "[proxy] path=",
-        pathname,
-        "token=",
-        !!token,
-        "public=",
-        isPublicPath,
-    );
-
     if (!token && !isPublicPath) {
-        console.log("[proxy] redirect -> /auth/login");
         return NextResponse.redirect(new URL("/auth/login", req.url));
     }
 
     if (token && authPaths.has(pathname)) {
-        console.log("[proxy] redirect -> /dashboard");
         return NextResponse.redirect(new URL("/dashboard", req.url));
     }
 
