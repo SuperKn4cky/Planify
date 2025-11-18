@@ -9,13 +9,11 @@
 !.yarn/versions
 
 # testing
-cypress/screenshots
-
-# next.js
-/.next/
+/coverage
 
 # production
-/build
+/dist
+/drizzle
 
 # misc
 .DS_Store
