@@ -80,6 +80,7 @@ export default function DashboardPage() {
         status: TaskStatus;
         priority: TaskPriority;
         due_date?: string;
+        folder_id?: number | null;
     }) {
         const created = await createTask(data);
         setTasks((cur) => [
@@ -304,6 +305,8 @@ export default function DashboardPage() {
                 open={isCreateTaskOpen}
                 onClose={() => setCreateTaskOpen(false)}
                 onCreate={handleCreateTask}
+                folders={folders}
+                defaultFolderId={folderId}
             />
 
             <CreateFolderDialog
