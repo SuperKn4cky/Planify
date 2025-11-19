@@ -6,6 +6,7 @@ import { Calendar } from "lucide-react";
 import type { TaskPriority, TaskStatus } from "@/features/tasks/types";
 import { taskSchema } from "@/features/tasks/validation";
 import { ApiError, getJSON, postJSON, delJSON, putJSON } from "@/lib/api";
+import { listFolders } from "@/features/tasks/api";
 
 type Task = {
     id: number;
@@ -16,6 +17,11 @@ type Task = {
     priority: TaskPriority;
     folder_id: number | null;
     responsible_user: number | null;
+};
+
+type Folder = {
+    id: number;
+    name: string;
 };
 
 function parseSlug(slug: string): number {
@@ -40,10 +46,41 @@ export default function TaskEditPage() {
     const [priority, setPriority] = useState<TaskPriority>(2);
     const [duedate, setDuedate] = useState<string>("");
 
+    const [folders, setFolders] = useState<Folder[]>([]);
+    const [folderId, setFolderId] = useState<number | "none">("none");
+
     const [errors, setErrors] = useState<Record<string, string | undefined>>(
         {},
     );
 
+    // Charger les dossiers disponibles
+    useEffect(() => {
+        let cancelled = false;
+
+        async function loadFolders() {
+            try {
+                const data = await listFolders();
+                if (!cancelled) {
+                    setFolders(
+                        data.map((f: any) => ({
+                            id: f.id,
+                            name: f.name,
+                        })),
+                    );
+                }
+            } catch (err) {
+                if (!cancelled) console.error(err);
+            }
+        }
+
+        loadFolders();
+
+        return () => {
+            cancelled = true;
+        };
+    }, []);
+
+    // Charger la tâche + gérer le lock
     useEffect(() => {
         if (!params?.slug) return;
         const id = parseSlug(params.slug);
@@ -81,6 +118,7 @@ export default function TaskEditPage() {
                         ? new Date(t.due_date).toISOString().slice(0, 10)
                         : "",
                 );
+                setFolderId(t.folder_id ?? "none");
             } catch (err) {
                 if (aborted) return;
                 console.error(err);
@@ -146,6 +184,7 @@ export default function TaskEditPage() {
                 status,
                 priority,
                 due_date: duedate || null,
+                folder_id: folderId === "none" ? null : folderId,
             });
 
             delJSON(`api/tasks/${id}/editing`).catch(() => {});
@@ -218,7 +257,7 @@ export default function TaskEditPage() {
                     )}
                 </div>
 
-                <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+                <div className="grid grid-cols-3 gap-4">
                     <div>
                         <label
                             htmlFor="task-status"
@@ -265,27 +304,54 @@ export default function TaskEditPage() {
 
                     <div>
                         <label
-                            htmlFor="task-due-date"
+                            htmlFor="task-folder"
                             className="block text-sm font-medium text-[#6B7280]"
                         >
-                            Date d’échéance
+                            Dossier
                         </label>
-                        <div className="mt-1 flex items-center gap-2">
-                            <Calendar className="h-4 w-4 text-[#6B7280]" />
-                            <input
-                                id="task-due-date"
-                                type="date"
-                                value={duedate}
-                                onChange={(e) => setDuedate(e.target.value)}
-                                className="h-10 flex-1 rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
-                            />
-                        </div>
-                        {errors.duedate && (
-                            <p className="mt-1 text-sm text-red-600">
-                                {errors.due_date}
-                            </p>
-                        )}
+                        <select
+                            id="task-folder"
+                            value={
+                                folderId === "none" ? "none" : String(folderId)
+                            }
+                            onChange={(e) => {
+                                const v = e.target.value;
+                                setFolderId(v === "none" ? "none" : Number(v));
+                            }}
+                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px]"
+                        >
+                            <option value="none">Aucun dossier</option>
+                            {folders.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                    {f.name}
+                                </option>
+                            ))}
+                        </select>
                     </div>
+                </div>
+
+                <div>
+                    <label
+                        htmlFor="task-due-date"
+                        className="block text-sm font-medium text-[#6B7280]"
+                    >
+                        Date d’échéance
+                    </label>
+                    <div className="mt-1 flex items-center gap-2">
+                        <Calendar className="h-4 w-4 text-[#6B7280]" />
+                        <input
+                            id="task-due-date"
+                            type="date"
+                            value={duedate}
+                            onChange={(e) => setDuedate(e.target.value)}
+                            className="h-10 flex-1 rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                        />
+                    </div>
+                    {errors.due_date && (
+                        <p className="mt-1 text-sm text-red-600">
+                            {errors.due_date}
+                        </p>
+                    )}
                 </div>
 
                 {apiError && (
