@@ -16,13 +16,18 @@ type CreateTaskDialogProps = {
         status: TaskStatus;
         priority: TaskPriority;
         due_date?: string;
+        folder_id?: number | null;
     }) => Promise<void>;
+    folders: Array<{ id: number; name: string }>;
+    defaultFolderId?: number | "all";
 };
 
 export function CreateTaskDialog({
     open,
     onClose,
     onCreate,
+    folders,
+    defaultFolderId,
 }: CreateTaskDialogProps) {
     const titleInputRef = useRef<HTMLInputElement | null>(null);
     const [title, setTitle] = useState("");
@@ -30,6 +35,7 @@ export function CreateTaskDialog({
     const [status, setStatus] = useState<TaskStatus>("todo");
     const [priority, setPriority] = useState<TaskPriority>(2);
     const [due_date, setDueDate] = useState("");
+    const [folderId, setFolderId] = useState<number | "none">("none");
     const [errors, setErrors] = useState<Record<string, string | undefined>>(
         {},
     );
@@ -50,6 +56,12 @@ export function CreateTaskDialog({
             setDueDate("");
             setErrors({});
             setApiError(null);
+
+            const initialFolder =
+                defaultFolderId && defaultFolderId !== "all"
+                    ? defaultFolderId
+                    : "none";
+            setFolderId(initialFolder);
         }
         return () => {
             document.removeEventListener("keydown", onKey);
@@ -60,6 +72,8 @@ export function CreateTaskDialog({
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
         setApiError(null);
+        setErrors({});
+
         const result = taskSchema.safeParse({
             title,
             description,
@@ -78,7 +92,11 @@ export function CreateTaskDialog({
         }
 
         try {
-            await onCreate(result.data as any);
+            const payload = {
+                ...result.data,
+                folder_id: folderId === "none" ? null : folderId,
+            };
+            await onCreate(payload as any);
         } catch (err: unknown) {
             if (err instanceof ApiError) {
                 setApiError(err.message);
@@ -145,6 +163,7 @@ export function CreateTaskDialog({
                             </p>
                         )}
                     </div>
+
                     <div>
                         <label
                             htmlFor="task-description"
@@ -165,7 +184,8 @@ export function CreateTaskDialog({
                             </p>
                         )}
                     </div>
-                    <div className="grid grid-cols-2 gap-4">
+
+                    <div className="grid grid-cols-3 gap-4">
                         <div>
                             <label
                                 htmlFor="task-status"
@@ -186,6 +206,7 @@ export function CreateTaskDialog({
                                 <option value="done">Terminé</option>
                             </select>
                         </div>
+
                         <div>
                             <label
                                 htmlFor="task-priority"
@@ -208,7 +229,39 @@ export function CreateTaskDialog({
                                 <option value={3}>Élevée</option>
                             </select>
                         </div>
+
+                        <div>
+                            <label
+                                htmlFor="task-folder"
+                                className="block text-sm font-medium text-[#6B7280]"
+                            >
+                                Dossier
+                            </label>
+                            <select
+                                id="task-folder"
+                                value={
+                                    folderId === "none"
+                                        ? "none"
+                                        : String(folderId)
+                                }
+                                onChange={(e) => {
+                                    const v = e.target.value;
+                                    setFolderId(
+                                        v === "none" ? "none" : Number(v),
+                                    );
+                                }}
+                                className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px"
+                            >
+                                <option value="none">Aucun dossier</option>
+                                {folders.map((f) => (
+                                    <option key={f.id} value={f.id}>
+                                        {f.name}
+                                    </option>
+                                ))}
+                            </select>
+                        </div>
                     </div>
+
                     <div>
                         <label
                             htmlFor="task-due-date"
