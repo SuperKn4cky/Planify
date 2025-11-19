@@ -7,7 +7,7 @@ import {
     users_own_tasks,
 } from "../db/schema.js";
 import AppError from "../middlewares/errorHandler.js";
-import { NewTask, Task } from "../DTO/taskDTO.js";
+import { NewTask, Task, UpdateTask } from "../DTO/taskDTO.js";
 import { InMemoryTaskLockManager } from "./taskLockManager.js";
 
 type TaskListFilters = {
@@ -101,7 +101,10 @@ export default class TaskService {
         taskId: number,
         userId: number,
     ): Promise<void> {
-        this.taskLockManager.acquire(taskId, userId);
+        const { isLocked } = this.taskLockManager.getStatus(taskId, userId);
+        if (isLocked) {
+            throw new AppError("Task is currently being edited", 409);
+        }
     }
 
     public async createTask(
@@ -179,6 +182,76 @@ export default class TaskService {
         }
 
         this.taskLockManager.release(taskId, userId);
+    }
+
+    public async updateTaskByID(
+        taskId: number,
+        userId: number,
+        payload: UpdateTask,
+    ): Promise<Task> {
+        const existing = await this.db
+            .select()
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+
+        if (existing.length === 0) {
+            throw new AppError("Task not found", 404);
+        }
+
+        await this.ensureTaskWriteAccess(taskId, userId);
+        await this.ensureNotLockedByOther(taskId, userId);
+
+        if (payload.folderid !== undefined && payload.folderid !== null) {
+            await this.ensureFolderWriteAccess(payload.folderid, userId);
+        }
+
+        if (
+            payload.responsibleuser !== undefined &&
+            payload.responsibleuser !== null
+        ) {
+            await this.ensureUserExists(payload.responsibleuser);
+        }
+
+        const updateData: Partial<typeof tasks.$inferInsert> = {};
+
+        if (payload.title !== undefined) {
+            updateData.title = payload.title;
+        }
+        if (payload.description !== undefined) {
+            updateData.description = payload.description;
+        }
+        if (payload.folderid !== undefined) {
+            updateData.folder_id = payload.folderid;
+        }
+        if (payload.responsibleuser !== undefined) {
+            updateData.responsible_user = payload.responsibleuser;
+        }
+        if (payload.duedate !== undefined) {
+            updateData.due_date = payload.duedate;
+        }
+        if (payload.status !== undefined) {
+            updateData.status = payload.status;
+        }
+        if (payload.priority !== undefined) {
+            updateData.priority = payload.priority;
+        }
+
+        if (Object.keys(updateData).length === 0) {
+            return new Task(existing[0], true);
+        }
+
+        const updated = await this.db
+            .update(tasks)
+            .set(updateData)
+            .where(eq(tasks.id, taskId))
+            .returning();
+
+        if (updated.length === 0) {
+            throw new AppError("Task not found", 404);
+        }
+
+        return new Task(updated[0], true);
     }
 
     public async getTasksForUser(

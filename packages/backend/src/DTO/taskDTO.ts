@@ -89,3 +89,23 @@ export class NewTask extends Task {
         super(parsed.data, true);
     }
 }
+
+export const updateTaskSchema = newTaskSchema.partial();
+
+export class UpdateTask {
+    public title?: string;
+    public description?: string | null;
+    public folderid?: number | null;
+    public responsibleuser?: number | null;
+    public duedate?: Date | null;
+    public status?: (typeof statusValues)[number];
+    public priority?: number;
+
+    public constructor(data: unknown) {
+        const parsed = updateTaskSchema.safeParse(data);
+        if (!parsed.success) {
+            throw parsed.error;
+        }
+        Object.assign(this, parsed.data);
+    }
+}

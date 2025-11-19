@@ -1,7 +1,7 @@
 import { NextFunction, Request, Response } from "express";
 import AppError from "../middlewares/errorHandler.js";
 import TaskService from "../services/taskService.js";
-import { NewTask } from "../DTO/taskDTO.js";
+import { NewTask, UpdateTask } from "../DTO/taskDTO.js";
 
 export default class TaskController {
     private taskService: TaskService;
@@ -54,6 +54,89 @@ export default class TaskController {
 
             await this.taskService.deleteTaskByID(id, req.user.id);
             res.status(200).json({ message: "Task deleted successfully" });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async updateTask(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const rawId = req.params.id;
+            const id = Number.parseInt(rawId, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid task id", 400);
+            }
+
+            const input = new UpdateTask({
+                title: req.body.title,
+                description: req.body.description,
+                folderid: req.body.folderid,
+                responsibleuser: req.body.responsible_user,
+                due_date: req.body.due_date,
+                status: req.body.status,
+                priority: req.body.priority,
+            });
+
+            const task = await this.taskService.updateTaskByID(
+                id,
+                req.user.id,
+                input,
+            );
+
+            res.status(200).json({
+                message: "Task updated successfully",
+                data: task.toPublic(),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async startEditing(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id)
+                throw new AppError("User not authenticated", 401);
+
+            const id = Number.parseInt(req.params.id, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid task id", 400);
+            }
+
+            await this.taskService.startEditing(id, req.user.id);
+            res.status(204).end();
+        } catch (error) {
+            next(error);
+        }
+    }
+
+    public async stopEditing(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id)
+                throw new AppError("User not authenticated", 401);
+
+            const id = Number.parseInt(req.params.id, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid task id", 400);
+            }
+
+            await this.taskService.stopEditing(id, req.user.id);
+            res.status(204).end();
         } catch (error) {
             next(error);
         }

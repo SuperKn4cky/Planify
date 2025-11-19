@@ -118,6 +118,24 @@ export default class Routes {
             this.taskController.listTasks.bind(this.taskController),
         );
 
+        this.app.put(
+            "/tasks/:id",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.updateTask.bind(this.taskController),
+        );
+
+        this.app.post(
+            "/tasks/:id/editing",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.startEditing.bind(this.taskController),
+        );
+
+        this.app.delete(
+            "/tasks/:id/editing",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.stopEditing.bind(this.taskController),
+        );
+
         this.app.delete(
             "/tasks/:id",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
