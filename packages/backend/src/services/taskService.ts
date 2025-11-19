@@ -15,6 +15,7 @@ type TaskListFilters = {
     sort: "recent" | "oldest";
     scope: "all" | "mine" | "shared";
     query: string | null;
+    folderId: number | null;
 };
 
 export default class TaskService {
@@ -285,6 +286,10 @@ export default class TaskService {
 
         if (filters.status !== "all") {
             whereParts.push(eq(tasks.status, filters.status));
+        }
+
+        if (filters.folderId !== null) {
+            whereParts.push(eq(tasks.folder_id, filters.folderId));
         }
 
         if (filters.scope === "mine") {

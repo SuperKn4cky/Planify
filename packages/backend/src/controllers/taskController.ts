@@ -192,10 +192,20 @@ export default class TaskController {
                 throw new AppError("Invalid page_size parameter", 400);
             }
 
+            const rawFolderId = req.query.folderId as string | undefined;
             const rawStatus = (req.query.status as string | undefined) ?? "all";
             const rawSort = (req.query.sort as string | undefined) ?? "recent";
             const rawScope = (req.query.scope as string | undefined) ?? "all";
             const rawQuery = (req.query.q as string | undefined)?.trim() ?? "";
+
+            let folderId: number | null = null;
+            if (rawFolderId && rawFolderId !== "all") {
+                const parsed = Number.parseInt(rawFolderId, 10);
+                if (!Number.isFinite(parsed) || parsed <= 0) {
+                    throw new AppError("Invalid folderId parameter", 400);
+                }
+                folderId = parsed;
+            }
 
             const status =
                 rawStatus === "todo" ||
@@ -220,6 +230,7 @@ export default class TaskController {
                     sort,
                     scope,
                     query,
+                    folderId,
                 },
             );
 
