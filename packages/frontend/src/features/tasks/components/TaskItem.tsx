@@ -1,6 +1,7 @@
 "use client";
 
 import { useState, useRef, useEffect } from "react";
+import Link from "next/link";
 import { Calendar, MoreHorizontal, Tag, User as UserIcon } from "lucide-react";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import type { Task } from "@/features/tasks/types";
@@ -9,6 +10,17 @@ type Props = {
     task: Task;
     onDelete: (id: number) => Promise<void>;
 };
+
+function slugifyTitle(id: number, title: string): string {
+    const slug = title
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9]+/g, "-")
+        .replace(/^-+|-+$/g, "");
+
+    return `${id}-${slug || "tache"}`;
+}
 
 export default function TaskItem({ task, onDelete }: Props) {
     const [openDelete, setOpenDelete] = useState(false);
@@ -31,6 +43,8 @@ export default function TaskItem({ task, onDelete }: Props) {
         };
     }, []);
 
+    const editHref = `/tasks/${slugifyTitle(task.id, task.title)}`;
+
     return (
         <div className="border-b border-[#E5E7EB] py-5">
             <div className="flex items-start justify-between gap-4 px-5">
@@ -39,7 +53,7 @@ export default function TaskItem({ task, onDelete }: Props) {
                         {task.title}
                     </h3>
                     {task.description ? (
-                        <p className="mt-1 text-15px text-[#6B7280] truncate">
+                        <p className="mt-1 truncate text-15px text-[#6B7280]">
                             {task.description}
                         </p>
                     ) : null}
@@ -89,16 +103,14 @@ export default function TaskItem({ task, onDelete }: Props) {
                                 role="menu"
                                 aria-orientation="vertical"
                             >
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setMenuOpen(false);
-                                    }}
+                                <Link
+                                    href={editHref}
+                                    onClick={() => setMenuOpen(false)}
                                     className="block w-full px-4 py-2 text-left text-14px text-[#0F172A] hover:bg-[#F3F4F6]"
                                     role="menuitem"
                                 >
                                     Modifier
-                                </button>
+                                </Link>
                                 <button
                                     type="button"
                                     onClick={() => {
