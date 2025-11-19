@@ -95,9 +95,9 @@ export const updateTaskSchema = newTaskSchema.partial();
 export class UpdateTask {
     public title?: string;
     public description?: string | null;
-    public folderid?: number | null;
-    public responsibleuser?: number | null;
-    public duedate?: Date | null;
+    public folder_id?: number | null;
+    public responsible_user?: number | null;
+    public due_date?: Date | null;
     public status?: (typeof statusValues)[number];
     public priority?: number;
 

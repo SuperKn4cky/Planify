@@ -78,8 +78,8 @@ export default class TaskController {
             const input = new UpdateTask({
                 title: req.body.title,
                 description: req.body.description,
-                folderid: req.body.folderid,
-                responsibleuser: req.body.responsible_user,
+                folder_id: req.body.folder_id,
+                responsible_user: req.body.responsible_user,
                 due_date: req.body.due_date,
                 status: req.body.status,
                 priority: req.body.priority,

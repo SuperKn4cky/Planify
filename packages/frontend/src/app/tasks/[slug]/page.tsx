@@ -11,11 +11,11 @@ type Task = {
     id: number;
     title: string;
     description: string | null;
-    duedate: string | null;
+    due_date: string | null;
     status: TaskStatus;
     priority: TaskPriority;
-    folderid: number | null;
-    responsibleuser: number | null;
+    folder_id: number | null;
+    responsible_user: number | null;
 };
 
 function parseSlug(slug: string): number {
@@ -55,7 +55,6 @@ export default function TaskEditPage() {
                 setLoading(true);
                 setApiError(null);
 
-                // Option : réserver la tâche pour édition (si tu ajoutes /tasks/:id/editing côté backend)
                 try {
                     await postJSON(`api/tasks/${id}/editing`);
                 } catch (err) {
@@ -65,7 +64,6 @@ export default function TaskEditPage() {
                         );
                         return;
                     }
-                    // autre erreur: on continue, mais on affiche un message
                     console.error(err);
                 }
 
@@ -79,8 +77,8 @@ export default function TaskEditPage() {
                 setStatus(t.status);
                 setPriority(t.priority);
                 setDuedate(
-                    t.duedate
-                        ? new Date(t.duedate).toISOString().slice(0, 10)
+                    t.due_date
+                        ? new Date(t.due_date).toISOString().slice(0, 10)
                         : "",
                 );
             } catch (err) {
@@ -100,7 +98,6 @@ export default function TaskEditPage() {
 
         return () => {
             aborted = true;
-            // Best effort : libérer le lock si la route /tasks/:id/editing existe
             const idCleanup = (() => {
                 try {
                     return parseSlug(params.slug);
@@ -124,7 +121,7 @@ export default function TaskEditPage() {
             description,
             status,
             priority,
-            duedate: duedate || undefined,
+            due_date: duedate || undefined,
         });
 
         if (!result.success) {
@@ -148,10 +145,9 @@ export default function TaskEditPage() {
                 description,
                 status,
                 priority,
-                duedate: duedate || null,
+                due_date: duedate || null,
             });
 
-            // Libérer le lock si possible
             delJSON(`api/tasks/${id}/editing`).catch(() => {});
 
             router.push("/dashboard");
@@ -286,7 +282,7 @@ export default function TaskEditPage() {
                         </div>
                         {errors.duedate && (
                             <p className="mt-1 text-sm text-red-600">
-                                {errors.duedate}
+                                {errors.due_date}
                             </p>
                         )}
                     </div>

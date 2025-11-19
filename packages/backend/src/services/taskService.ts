@@ -202,15 +202,15 @@ export default class TaskService {
         await this.ensureTaskWriteAccess(taskId, userId);
         await this.ensureNotLockedByOther(taskId, userId);
 
-        if (payload.folderid !== undefined && payload.folderid !== null) {
-            await this.ensureFolderWriteAccess(payload.folderid, userId);
+        if (payload.folder_id !== undefined && payload.folder_id !== null) {
+            await this.ensureFolderWriteAccess(payload.folder_id, userId);
         }
 
         if (
-            payload.responsibleuser !== undefined &&
-            payload.responsibleuser !== null
+            payload.responsible_user !== undefined &&
+            payload.responsible_user !== null
         ) {
-            await this.ensureUserExists(payload.responsibleuser);
+            await this.ensureUserExists(payload.responsible_user);
         }
 
         const updateData: Partial<typeof tasks.$inferInsert> = {};
@@ -221,14 +221,14 @@ export default class TaskService {
         if (payload.description !== undefined) {
             updateData.description = payload.description;
         }
-        if (payload.folderid !== undefined) {
-            updateData.folder_id = payload.folderid;
+        if (payload.folder_id !== undefined) {
+            updateData.folder_id = payload.folder_id;
         }
-        if (payload.responsibleuser !== undefined) {
-            updateData.responsible_user = payload.responsibleuser;
+        if (payload.responsible_user !== undefined) {
+            updateData.responsible_user = payload.responsible_user;
         }
-        if (payload.duedate !== undefined) {
-            updateData.due_date = payload.duedate;
+        if (payload.due_date !== undefined) {
+            updateData.due_date = payload.due_date;
         }
         if (payload.status !== undefined) {
             updateData.status = payload.status;
