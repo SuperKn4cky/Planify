@@ -1,4 +1,4 @@
-import { and, eq, sql, desc } from "drizzle-orm";
+import { and, eq, ne, sql, asc, desc } from "drizzle-orm";
 import type { DB } from "../db/drizzle.js";
 import {
     tasks,
@@ -9,6 +9,12 @@ import {
 import AppError from "../middlewares/errorHandler.js";
 import { NewTask, Task } from "../DTO/taskDTO.js";
 import { InMemoryTaskLockManager } from "./taskLockManager.js";
+
+type TaskListFilters = {
+    status: "all" | "todo" | "doing" | "done";
+    sort: "recent" | "oldest";
+    scope: "all" | "mine" | "shared";
+};
 
 export default class TaskService {
     private db: DB;
@@ -178,8 +184,26 @@ export default class TaskService {
         userId: number,
         page: number,
         pageSize: number,
+        filters: TaskListFilters,
     ) {
         const offset = (page - 1) * pageSize;
+
+        const whereParts = [
+            eq(users_own_tasks.user_id, userId),
+            eq(users_own_tasks.task_id, tasks.id),
+        ];
+
+        if (filters.status !== "all") {
+            whereParts.push(eq(tasks.status, filters.status));
+        }
+
+        if (filters.scope === "mine") {
+            whereParts.push(eq(users_own_tasks.permission, "owner"));
+        } else if (filters.scope === "shared") {
+            whereParts.push(ne(users_own_tasks.permission, "owner"));
+        }
+
+        const whereClause = and(...whereParts);
 
         const [countRow] = await this.db
             .select({
@@ -192,9 +216,13 @@ export default class TaskService {
                     eq(users_own_tasks.task_id, tasks.id),
                     eq(users_own_tasks.user_id, userId),
                 ),
-            );
+            )
+            .where(whereClause);
 
         const total = Number(countRow.count ?? 0);
+
+        const orderByExpr =
+            filters.sort === "oldest" ? asc(tasks.id) : desc(tasks.id);
 
         const rows = await this.db
             .select({
@@ -209,26 +237,27 @@ export default class TaskService {
                     eq(users_own_tasks.user_id, userId),
                 ),
             )
-            .orderBy(desc(tasks.id))
+            .where(whereClause)
+            .orderBy(orderByExpr)
             .limit(pageSize)
             .offset(offset);
 
         const items = rows.map((row) => {
-            const task = row.task;
+            const t = row.task;
             const { isLocked, lockedByMe } = this.taskLockManager.getStatus(
-                task.id,
+                t.id,
                 userId,
             );
 
             return {
-                id: task.id,
-                title: task.title,
-                description: task.description,
-                status: task.status,
-                priority: task.priority,
-                duedate: task.due_date,
-                folderid: task.folder_id,
-                responsibleuser: task.responsible_user,
+                id: t.id,
+                title: t.title,
+                description: t.description,
+                status: t.status,
+                priority: t.priority,
+                due_date: t.due_date,
+                folder_id: t.folder_id,
+                responsible_user: t.responsible_user,
                 permission: row.permission,
                 isLocked,
                 lockedByMe,

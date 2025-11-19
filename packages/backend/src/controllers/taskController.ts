@@ -83,10 +83,31 @@ export default class TaskController {
                 throw new AppError("Invalid page_size parameter", 400);
             }
 
+            const rawStatus = (req.query.status as string | undefined) ?? "all";
+            const rawSort = (req.query.sort as string | undefined) ?? "recent";
+            const rawScope = (req.query.scope as string | undefined) ?? "all";
+
+            const status =
+                rawStatus === "todo" ||
+                rawStatus === "doing" ||
+                rawStatus === "done"
+                    ? rawStatus
+                    : "all";
+
+            const sort = rawSort === "oldest" ? "oldest" : "recent";
+
+            const scope =
+                rawScope === "mine" || rawScope === "shared" ? rawScope : "all";
+
             const { items, total } = await this.taskService.getTasksForUser(
                 req.user.id,
                 page,
                 pageSize,
+                {
+                    status,
+                    sort,
+                    scope,
+                },
             );
 
             const totalPages = Math.ceil(total / pageSize);
