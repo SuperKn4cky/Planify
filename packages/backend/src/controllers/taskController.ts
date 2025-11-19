@@ -58,4 +58,48 @@ export default class TaskController {
             next(error);
         }
     }
+
+    public async listTasks(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const rawPage = req.query.page as string | undefined;
+            const rawPageSize = req.query.page_size as string | undefined;
+
+            const page = Number.parseInt(rawPage ?? "1", 10);
+            const pageSize = Number.parseInt(rawPageSize ?? "15", 10);
+
+            if (!Number.isFinite(page) || page <= 0) {
+                throw new AppError("Invalid page parameter", 400);
+            }
+
+            if (!Number.isFinite(pageSize) || pageSize <= 0 || pageSize > 100) {
+                throw new AppError("Invalid page_size parameter", 400);
+            }
+
+            const { items, total } = await this.taskService.getTasksForUser(
+                req.user.id,
+                page,
+                pageSize,
+            );
+
+            const totalPages = Math.ceil(total / pageSize);
+
+            res.status(200).json({
+                items,
+                page,
+                pageSize,
+                total,
+                totalPages,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

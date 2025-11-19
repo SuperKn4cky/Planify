@@ -1,4 +1,4 @@
-import { and, eq } from "drizzle-orm";
+import { and, eq, sql, desc } from "drizzle-orm";
 import type { DB } from "../db/drizzle.js";
 import {
     tasks,
@@ -8,12 +8,15 @@ import {
 } from "../db/schema.js";
 import AppError from "../middlewares/errorHandler.js";
 import { NewTask, Task } from "../DTO/taskDTO.js";
+import { InMemoryTaskLockManager } from "./taskLockManager.js";
 
 export default class TaskService {
     private db: DB;
+    private taskLockManager: InMemoryTaskLockManager;
 
     public constructor(db: DB) {
         this.db = db;
+        this.taskLockManager = new InMemoryTaskLockManager();
     }
 
     private async ensureFolderWriteAccess(
@@ -75,6 +78,23 @@ export default class TaskService {
         if (perm === "read") {
             throw new AppError("Task is read-only for this user", 403);
         }
+    }
+
+    public async startEditing(taskId: number, userId: number): Promise<void> {
+        await this.ensureTaskWriteAccess(taskId, userId);
+        this.taskLockManager.acquire(taskId, userId);
+    }
+
+    public async stopEditing(taskId: number, userId: number): Promise<void> {
+        await this.ensureTaskWriteAccess(taskId, userId);
+        this.taskLockManager.release(taskId, userId);
+    }
+
+    private async ensureNotLockedByOther(
+        taskId: number,
+        userId: number,
+    ): Promise<void> {
+        this.taskLockManager.acquire(taskId, userId);
     }
 
     public async createTask(
@@ -141,6 +161,7 @@ export default class TaskService {
         }
 
         await this.ensureTaskWriteAccess(taskId, userId);
+        await this.ensureNotLockedByOther(taskId, userId);
 
         const result = await this.db
             .delete(tasks)
@@ -149,5 +170,71 @@ export default class TaskService {
         if (result.length === 0) {
             throw new AppError("Task not found", 404);
         }
+
+        this.taskLockManager.release(taskId, userId);
+    }
+
+    public async getTasksForUser(
+        userId: number,
+        page: number,
+        pageSize: number,
+    ) {
+        const offset = (page - 1) * pageSize;
+
+        const [countRow] = await this.db
+            .select({
+                count: sql<number>`COUNT(*)`,
+            })
+            .from(tasks)
+            .innerJoin(
+                users_own_tasks,
+                and(
+                    eq(users_own_tasks.task_id, tasks.id),
+                    eq(users_own_tasks.user_id, userId),
+                ),
+            );
+
+        const total = Number(countRow.count ?? 0);
+
+        const rows = await this.db
+            .select({
+                task: tasks,
+                permission: users_own_tasks.permission,
+            })
+            .from(tasks)
+            .innerJoin(
+                users_own_tasks,
+                and(
+                    eq(users_own_tasks.task_id, tasks.id),
+                    eq(users_own_tasks.user_id, userId),
+                ),
+            )
+            .orderBy(desc(tasks.id))
+            .limit(pageSize)
+            .offset(offset);
+
+        const items = rows.map((row) => {
+            const task = row.task;
+            const { isLocked, lockedByMe } = this.taskLockManager.getStatus(
+                task.id,
+                userId,
+            );
+
+            return {
+                id: task.id,
+                title: task.title,
+                description: task.description,
+                status: task.status,
+                priority: task.priority,
+                duedate: task.due_date,
+                folderid: task.folder_id,
+                responsibleuser: task.responsible_user,
+                permission: row.permission,
+                isLocked,
+                lockedByMe,
+            };
+        });
+
+        return { items, total };
     }
 }
