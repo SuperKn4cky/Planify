@@ -254,6 +254,22 @@ export default class TaskService {
         return new Task(updated[0], true);
     }
 
+    public async getTaskByID(taskId: number, userId: number): Promise<Task> {
+        const existing = await this.db
+            .select()
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+
+        if (existing.length === 0) {
+            throw new AppError("Task not found", 404);
+        }
+
+        await this.ensureTaskWriteAccess(taskId, userId);
+
+        return new Task(existing[0]);
+    }
+
     public async getTasksForUser(
         userId: number,
         page: number,

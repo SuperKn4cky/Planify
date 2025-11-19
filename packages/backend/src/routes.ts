@@ -118,6 +118,12 @@ export default class Routes {
             this.taskController.listTasks.bind(this.taskController),
         );
 
+        this.app.get(
+            "/tasks/:id",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskController.getTask.bind(this.taskController),
+        );
+
         this.app.put(
             "/tasks/:id",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),

@@ -142,6 +142,32 @@ export default class TaskController {
         }
     }
 
+    public async getTask(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const rawId = req.params.id;
+            const id = Number.parseInt(rawId, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid task id", 400);
+            }
+
+            const task = await this.taskService.getTaskByID(id, req.user.id);
+
+            res.status(200).json({
+                data: task.toPublic(),
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public async listTasks(
         req: Request,
         res: Response,
