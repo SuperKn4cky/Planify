@@ -1,4 +1,4 @@
-import { and, eq, ne, sql, asc, desc } from "drizzle-orm";
+import { and, or, eq, ne, sql, asc, desc, ilike } from "drizzle-orm";
 import type { DB } from "../db/drizzle.js";
 import {
     tasks,
@@ -14,6 +14,7 @@ type TaskListFilters = {
     status: "all" | "todo" | "doing" | "done";
     sort: "recent" | "oldest";
     scope: "all" | "mine" | "shared";
+    query: string | null;
 };
 
 export default class TaskService {
@@ -201,6 +202,21 @@ export default class TaskService {
             whereParts.push(eq(users_own_tasks.permission, "owner"));
         } else if (filters.scope === "shared") {
             whereParts.push(ne(users_own_tasks.permission, "owner"));
+        }
+
+        if (filters.query) {
+            const pattern = `%${filters.query
+                .replace(/%/g, "\\%")
+                .replace(/_/g, "\\_")}%`;
+
+            const searchCond = or(
+                ilike(tasks.title, pattern),
+                ilike(tasks.description, pattern),
+            );
+
+            if (searchCond) {
+                whereParts.push(searchCond);
+            }
         }
 
         const whereClause = and(...whereParts);
