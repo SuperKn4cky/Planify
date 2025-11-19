@@ -9,8 +9,10 @@ import {
     deleteTask,
     listTasks,
     createFolder,
+    listFolders,
 } from "@/features/tasks/api";
 import { CreateTaskDialog } from "@/features/tasks/components/CreateTaskDialog";
+import { CreateFolderDialog } from "@/features/tasks/components/CreateFolderDialog";
 
 export default function DashboardPage() {
     const [query, setQuery] = useState("");
@@ -18,8 +20,13 @@ export default function DashboardPage() {
     const [sort, setSort] = useState<"recent" | "oldest">("recent");
     const [scope, setScope] = useState<"all" | "mine" | "shared">("all");
     const [tasks, setTasks] = useState<Task[]>([]);
+    const [folders, setFolders] = useState<
+        Array<{ id: number; name: string; permission?: string }>
+    >([]);
+    const [folderId, setFolderId] = useState<number | "all">("all");
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
+    const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -29,7 +36,7 @@ export default function DashboardPage() {
         let aborted = false;
         setLoading(true);
 
-        listTasks({ q: query, status, sort, scope, page, pageSize })
+        listTasks({ q: query, status, sort, scope, page, pageSize, folderId })
             .then((res) => {
                 if (aborted) return;
                 setTasks(res.items);
@@ -46,7 +53,26 @@ export default function DashboardPage() {
         return () => {
             aborted = true;
         };
-    }, [query, status, sort, scope, page, pageSize]);
+    }, [query, status, sort, scope, page, pageSize, folderId]);
+
+    useEffect(() => {
+        let aborted = false;
+
+        async function loadFolders() {
+            try {
+                const data = await listFolders();
+                if (!aborted) setFolders(data);
+            } catch (err) {
+                if (!aborted) console.error(err);
+            }
+        }
+
+        loadFolders();
+
+        return () => {
+            aborted = true;
+        };
+    }, []);
 
     async function handleCreateTask(data: {
         title: string;
@@ -67,13 +93,10 @@ export default function DashboardPage() {
         setCreateTaskOpen(false);
     }
 
-    async function onCreateFolder() {
-        const name = window.prompt("Nom du dossier ?");
-        if (!name) return;
-        await createFolder(name);
-        alert(
-            "Dossier créé (stub) — branchement à ajouter quand le backend sera prêt.",
-        );
+    async function handleCreateFolder(name: string) {
+        const folder = await createFolder(name);
+        setFolders((cur) => [...cur, folder]);
+        setCreateFolderOpen(false);
     }
 
     async function onDeleteTask(id: number) {
@@ -98,14 +121,14 @@ export default function DashboardPage() {
                             Nouvelle tâche
                         </button>
 
-                        {/* <button
+                        <button
                             type="button"
-                            onClick={onCreateFolder}
+                            onClick={() => setCreateFolderOpen(true)}
                             className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 text-15px text-[#0F172A] hover:bg-[#ECEFED]"
                         >
                             <FolderPlus className="h-5 w-5" />
                             Nouveau dossier
-                        </button> */}
+                        </button>
                     </div>
                 </div>
             </div>
@@ -152,6 +175,29 @@ export default function DashboardPage() {
                             <option value="todo">Seulement à faire</option>
                             <option value="doing">En cours</option>
                             <option value="done">Seulement terminées</option>
+                        </select>
+
+                        {/* Dossier */}
+                        <select
+                            value={
+                                folderId === "all" ? "all" : String(folderId)
+                            }
+                            onChange={(e) => {
+                                const value = e.target.value;
+                                setFolderId(
+                                    value === "all" ? "all" : Number(value),
+                                );
+                                setPage(1);
+                            }}
+                            className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px"
+                            aria-label="Filtrer par dossier"
+                        >
+                            <option value="all">Tous les dossiers</option>
+                            {folders.map((f) => (
+                                <option key={f.id} value={f.id}>
+                                    {f.name}
+                                </option>
+                            ))}
                         </select>
 
                         {/* Mes tâches / partagées */}
@@ -258,6 +304,12 @@ export default function DashboardPage() {
                 open={isCreateTaskOpen}
                 onClose={() => setCreateTaskOpen(false)}
                 onCreate={handleCreateTask}
+            />
+
+            <CreateFolderDialog
+                open={isCreateFolderOpen}
+                onClose={() => setCreateFolderOpen(false)}
+                onCreate={handleCreateFolder}
             />
         </>
     );

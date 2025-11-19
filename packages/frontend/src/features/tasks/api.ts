@@ -71,11 +71,18 @@ export async function toggleTaskStatus(id: number, status: TaskStatus) {
 }
 
 export async function listFolders() {
-    // TODO: GET /folders
-    return { data: [] as Array<{ id: number; name: string }> }; // placeholder
+    const res = await getJSON<{
+        data: Array<{ id: number; name: string; permission: string }>;
+    }>("api/folders");
+
+    return res.data;
 }
 
 export async function createFolder(name: string) {
-    // TODO: POST /folders
-    return { id: Math.floor(Math.random() * 1e6), name }; // placeholder
+    const res = await postJSON<{
+        message: string;
+        data: { id: number; name: string; permission?: string };
+    }>("api/folders", { name });
+
+    return res.data;
 }
