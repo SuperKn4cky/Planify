@@ -6,6 +6,8 @@ import UserController from "./controllers/userController.js";
 import UserService from "./services/userService.js";
 import TaskController from "./controllers/taskController.js";
 import TaskService from "./services/taskService.js";
+import FolderController from "./controllers/folderController.js";
+import FolderService from "./services/folderService.js";
 
 export default class Routes {
     private app: express.Application;
@@ -20,6 +22,9 @@ export default class Routes {
 
     private taskService: TaskService;
     private taskController: TaskController;
+
+    private folderService: FolderService;
+    private folderController: FolderController;
 
     public constructor(app: express.Application, db: DB, jwtSecret: string) {
         this.app = app;
@@ -40,6 +45,9 @@ export default class Routes {
 
         this.taskService = new TaskService(this.db);
         this.taskController = new TaskController(this.taskService);
+
+        this.folderService = new FolderService(this.db);
+        this.folderController = new FolderController(this.folderService);
     }
 
     public register(): void {
@@ -48,6 +56,9 @@ export default class Routes {
 
         // Task routes
         this.tasksRoutes();
+
+        // Folder routes
+        this.foldersRoutes();
 
         // Health check endpoint
         this.app.get("/health", (req: Request, res: Response) => {
@@ -146,6 +157,14 @@ export default class Routes {
             "/tasks/:id",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskController.deleteTask.bind(this.taskController),
+        );
+    }
+
+    private foldersRoutes(): void {
+        this.app.post(
+            "/folders",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.folderController.createFolder.bind(this.folderController),
         );
     }
 }
