@@ -37,7 +37,7 @@ export async function listTasks(params?: {
         search.set("status", params.status);
     }
     if (params?.folderId && params.folderId !== "all") {
-        search.set("folderId", String(params.folderId));
+        search.set("folder_id", String(params.folderId));
     }
     if (params?.sort) search.set("sort", params.sort);
     if (params?.page) search.set("page", String(params.page));
