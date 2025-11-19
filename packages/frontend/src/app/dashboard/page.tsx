@@ -98,14 +98,14 @@ export default function DashboardPage() {
                             Nouvelle tâche
                         </button>
 
-                        <button
+                        {/* <button
                             type="button"
                             onClick={onCreateFolder}
                             className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 text-15px text-[#0F172A] hover:bg-[#ECEFED]"
                         >
                             <FolderPlus className="h-5 w-5" />
                             Nouveau dossier
-                        </button>
+                        </button> */}
                     </div>
                 </div>
             </div>
