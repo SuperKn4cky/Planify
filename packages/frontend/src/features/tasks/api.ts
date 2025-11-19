@@ -26,10 +26,31 @@ export async function listTasks(params?: {
     status?: "all" | TaskStatus;
     folderId?: number | "all";
     sort?: "recent" | "oldest";
+    page?: number;
+    pageSize?: number;
 }) {
-    // TODO: GET /tasks?q=&status=&folderId=&sort=
-    // return getJSON<{ data: Task[] }>('api/tasks', { /* signal/abort, params */ });
-    return { data: [] as Task[] }; // placeholder
+    const search = new URLSearchParams();
+
+    if (params?.q) search.set("q", params.q);
+    if (params?.status && params.status !== "all")
+        search.set("status", params.status);
+    if (params?.folderId && params.folderId !== "all") {
+        search.set("folderId", String(params.folderId));
+    }
+    if (params?.sort) search.set("sort", params.sort);
+    if (params?.page) search.set("page", String(params.page));
+    if (params?.pageSize) search.set("page_size", String(params.pageSize));
+
+    const qs = search.toString();
+    const path = qs ? `api/tasks?${qs}` : "api/tasks";
+
+    return getJSON<{
+        items: Task[];
+        page: number;
+        pageSize: number;
+        total: number;
+        totalPages: number;
+    }>(path);
 }
 
 export async function updateTask(id: number, patch: Partial<Task>) {

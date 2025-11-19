@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useState } from "react";
 import { Plus, FolderPlus, Search } from "lucide-react";
 import TaskItem from "@/features/tasks/components/TaskItem";
 import type { Task, TaskPriority, TaskStatus } from "@/features/tasks/types";
@@ -14,31 +14,38 @@ import { CreateTaskDialog } from "@/features/tasks/components/CreateTaskDialog";
 
 export default function DashboardPage() {
     const [query, setQuery] = useState("");
-    const [status, setStatus] = useState<"all" | "todo" | "doing" | "done">(
-        "all",
-    );
+    const [status, setStatus] = useState<"all" | TaskStatus>("all");
     const [sort, setSort] = useState<"recent" | "oldest">("recent");
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
 
-    // Chargement des tâches (stub GET /tasks pour l’instant)
+    const [page, setPage] = useState(1);
+    const [pageSize, setPageSize] = useState(10);
+    const [totalPages, setTotalPages] = useState(1);
+
     useEffect(() => {
         let aborted = false;
         setLoading(true);
-        listTasks({ q: query, status, sort })
-            .then(({ data }) => {
-                if (!aborted) {
-                    setTasks(data);
-                }
+
+        listTasks({ q: query, status, sort, page, pageSize })
+            .then((res) => {
+                if (aborted) return;
+                setTasks(res.items);
+                setTotalPages(res.totalPages || 1);
             })
-            .finally(() => !aborted && setLoading(false));
+            .catch((err) => {
+                if (aborted) return;
+                console.error(err);
+            })
+            .finally(() => {
+                if (!aborted) setLoading(false);
+            });
+
         return () => {
             aborted = true;
         };
-    }, [query, status, sort]);
-
-    const filtered = useMemo(() => tasks, [tasks]);
+    }, [query, status, sort, page, pageSize]);
 
     async function handleCreateTask(data: {
         title: string;
@@ -48,7 +55,6 @@ export default function DashboardPage() {
         due_date?: string;
     }) {
         const created = await createTask(data);
-        // Ajout local pour feedback immédiat
         setTasks((cur) => [
             {
                 ...created,
@@ -63,7 +69,7 @@ export default function DashboardPage() {
     async function onCreateFolder() {
         const name = window.prompt("Nom du dossier ?");
         if (!name) return;
-        await createFolder(name); // stub, affichage non implémenté tant que l’endpoint n’existe pas
+        await createFolder(name);
         alert(
             "Dossier créé (stub) — branchement à ajouter quand le backend sera prêt.",
         );
@@ -159,12 +165,12 @@ export default function DashboardPage() {
                             <div className="p-6 text-[#6B7280]">
                                 Chargement…
                             </div>
-                        ) : filtered.length === 0 ? (
+                        ) : tasks.length === 0 ? (
                             <div className="p-6 text-[#6B7280]">
                                 Aucune tâche pour l’instant.
                             </div>
                         ) : (
-                            filtered.map((t) => (
+                            tasks.map((t) => (
                                 <TaskItem
                                     key={t.id}
                                     task={t}
@@ -174,7 +180,59 @@ export default function DashboardPage() {
                         )}
                     </div>
                 </div>
+
+                {/* Pagination + choix du nombre d'éléments */}
+                <div className="mt-4 flex flex-col gap-3 text-sm text-[#6B7280] sm:flex-row sm:items-center sm:justify-between">
+                    {/* gauche : choix du nombre d'éléments */}
+                    <div className="flex items-center gap-2">
+                        <span>Éléments par page :</span>
+                        <select
+                            value={pageSize}
+                            onChange={(e) => {
+                                const next = Number(e.target.value);
+                                setPageSize(next);
+                                setPage(1);
+                            }}
+                            className="h-8 rounded-lg border border-[#E5E7EB] bg-white px-2 text-[13px]"
+                        >
+                            <option value={5}>5</option>
+                            <option value={10}>10</option>
+                            <option value={20}>20</option>
+                            <option value={50}>50</option>
+                        </select>
+                    </div>
+
+                    {/* droite : numéro de page + boutons */}
+                    <div className="flex items-center gap-2 justify-end">
+                        <span>
+                            Page {page} / {totalPages || 1}
+                        </span>
+                        <div className="flex gap-2">
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setPage((p) => Math.max(1, p - 1))
+                                }
+                                disabled={page <= 1 || loading}
+                                className="h-8 rounded-lg border border-[#E5E7EB] px-3 disabled:opacity-50"
+                            >
+                                Précédent
+                            </button>
+                            <button
+                                type="button"
+                                onClick={() =>
+                                    setPage((p) => (p < totalPages ? p + 1 : p))
+                                }
+                                disabled={page >= totalPages || loading}
+                                className="h-8 rounded-lg border border-[#E5E7EB] px-3 disabled:opacity-50"
+                            >
+                                Suivant
+                            </button>
+                        </div>
+                    </div>
+                </div>
             </div>
+
             <CreateTaskDialog
                 open={isCreateTaskOpen}
                 onClose={() => setCreateTaskOpen(false)}
