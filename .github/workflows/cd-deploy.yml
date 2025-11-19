@@ -1,0 +1,43 @@
+name: CD - Deploy via SSH
+
+on:
+  push:
+    tags:
+      - "v*.*.*"
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    env:
+      APP_VERSION: ${{ github.ref_name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Deploy over SSH
+        uses: appleboy/ssh-action@v1.0.3
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          script: |
+            echo "Déploiement de la version ${APP_VERSION}"
+
+            APP_DIR=/var/www/mon-app
+
+            if [ ! -d "$APP_DIR" ]; then
+              git clone git@github.com:mon-org/mon-repo.git "$APP_DIR"
+            fi
+
+            cd "$APP_DIR"
+
+            git fetch --all --tags
+            git checkout "${APP_VERSION}"
+
+            docker compose pull
+            docker compose up -d --remove-orphans
+
+            echo "Déploiement terminé pour ${APP_VERSION}"
