@@ -83,9 +83,9 @@ export default function DashboardPage() {
 
     return (
         <>
-            <div className="mx-auto max-w-5xl text-[#0F172A]">
-                {/* En-tête */}
-                <div className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+            {/* En-tête pleine largeur avec bordure basse */}
+            <div className="border-b border-[#E5E7EB] bg-white">
+                <div className="mx-auto flex max-w-5xl flex-col gap-4 py-4 text-[#0F172A] sm:flex-row sm:items-center sm:justify-between">
                     <h1 className="text-2xl font-semibold">Dashboard</h1>
 
                     <div className="flex items-center gap-2">
@@ -108,20 +108,24 @@ export default function DashboardPage() {
                         </button>
                     </div>
                 </div>
+            </div>
 
-                {/* Barre de recherche et filtres */}
-                <div className="mt-6 flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                    <div className="relative w-full sm:max-w-md">
+            {/* Contenu principal centré */}
+            <div className="mx-auto max-w-5xl text-[#0F172A]">
+                {/* Barre de recherche */}
+                <div className="mt-6">
+                    <div className="relative w-full">
                         <input
                             value={query}
                             onChange={(e) => setQuery(e.target.value)}
                             placeholder="Recherchez une tâche…"
-                            className="w-full h-11 rounded-lg border border-[#E5E7EB] pl-10 pr-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                            className="h-11 w-full rounded-lg border border-[#E5E7EB] pl-10 pr-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
                         />
                         <Search className="pointer-events-none absolute left-3 top-1/2 h-5 w-5 -translate-y-1/2 text-[#6B7280]" />
                     </div>
 
-                    <div className="flex flex-wrap items-center gap-2">
+                    {/* Filtres sous la barre de recherche */}
+                    <div className="mt-3 flex flex-wrap items-center gap-2">
                         {/* Tri récent / ancien */}
                         <select
                             value={sort}
@@ -184,7 +188,7 @@ export default function DashboardPage() {
                             </div>
                         ) : tasks.length === 0 ? (
                             <div className="p-6 text-[#6B7280]">
-                                Aucune tâche pour l'instant.
+                                Aucune tâche pour l’instant.
                             </div>
                         ) : (
                             tasks.map((t) => (
@@ -220,7 +224,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* À droite : numéro de page + boutons */}
-                    <div className="flex items-center gap-2 justify-end">
+                    <div className="flex items-center justify-end gap-2">
                         <span>
                             Page {page} / {totalPages || 1}
                         </span>
