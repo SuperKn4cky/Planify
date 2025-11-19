@@ -192,7 +192,7 @@ export default class TaskController {
                 throw new AppError("Invalid page_size parameter", 400);
             }
 
-            const rawFolderId = req.query.folderId as string | undefined;
+            const rawFolderId = req.query.folder_id as string | undefined;
             const rawStatus = (req.query.status as string | undefined) ?? "all";
             const rawSort = (req.query.sort as string | undefined) ?? "recent";
             const rawScope = (req.query.scope as string | undefined) ?? "all";
