@@ -28,18 +28,23 @@ export async function listTasks(params?: {
     sort?: "recent" | "oldest";
     page?: number;
     pageSize?: number;
+    scope?: "all" | "mine" | "shared";
 }) {
     const search = new URLSearchParams();
 
     if (params?.q) search.set("q", params.q);
-    if (params?.status && params.status !== "all")
+    if (params?.status && params.status !== "all") {
         search.set("status", params.status);
+    }
     if (params?.folderId && params.folderId !== "all") {
         search.set("folderId", String(params.folderId));
     }
     if (params?.sort) search.set("sort", params.sort);
     if (params?.page) search.set("page", String(params.page));
     if (params?.pageSize) search.set("page_size", String(params.pageSize));
+    if (params?.scope && params.scope !== "all") {
+        search.set("scope", params.scope);
+    }
 
     const qs = search.toString();
     const path = qs ? `api/tasks?${qs}` : "api/tasks";

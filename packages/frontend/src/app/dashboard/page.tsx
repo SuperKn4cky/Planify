@@ -16,6 +16,7 @@ export default function DashboardPage() {
     const [query, setQuery] = useState("");
     const [status, setStatus] = useState<"all" | TaskStatus>("all");
     const [sort, setSort] = useState<"recent" | "oldest">("recent");
+    const [scope, setScope] = useState<"all" | "mine" | "shared">("all");
     const [tasks, setTasks] = useState<Task[]>([]);
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
@@ -28,7 +29,7 @@ export default function DashboardPage() {
         let aborted = false;
         setLoading(true);
 
-        listTasks({ q: query, status, sort, page, pageSize })
+        listTasks({ q: query, status, sort, scope, page, pageSize })
             .then((res) => {
                 if (aborted) return;
                 setTasks(res.items);
@@ -45,7 +46,7 @@ export default function DashboardPage() {
         return () => {
             aborted = true;
         };
-    }, [query, status, sort, page, pageSize]);
+    }, [query, status, sort, scope, page, pageSize]);
 
     async function handleCreateTask(data: {
         title: string;
@@ -121,6 +122,7 @@ export default function DashboardPage() {
                     </div>
 
                     <div className="flex flex-wrap items-center gap-2">
+                        {/* Tri récent / ancien */}
                         <select
                             value={sort}
                             onChange={(e) => setSort(e.target.value as any)}
@@ -135,26 +137,41 @@ export default function DashboardPage() {
                             </option>
                         </select>
 
+                        {/* Statut todo/doing/done */}
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value as any)}
                             className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px"
-                            aria-label="Tâches terminées"
+                            aria-label="Filtrer par statut"
                         >
-                            <option value="all">
-                                Tâches terminées : Afficher
-                            </option>
+                            <option value="all">Tous les statuts</option>
                             <option value="todo">Seulement à faire</option>
                             <option value="doing">En cours</option>
                             <option value="done">Seulement terminées</option>
                         </select>
 
-                        <button
+                        {/* Mes tâches / partagées */}
+                        <select
+                            value={scope}
+                            onChange={(e) =>
+                                setScope(
+                                    e.target.value as "all" | "mine" | "shared",
+                                )
+                            }
+                            className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px"
+                            aria-label="Portée des tâches"
+                        >
+                            <option value="all">Toutes les tâches</option>
+                            <option value="mine">Mes tâches</option>
+                            <option value="shared">Partagées avec moi</option>
+                        </select>
+
+                        {/* <button
                             type="button"
                             className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px text-[#0F172A] hover:bg-[#ECEFED]"
                         >
                             Tags :
-                        </button>
+                        </button> */}
                     </div>
                 </div>
 
@@ -167,7 +184,7 @@ export default function DashboardPage() {
                             </div>
                         ) : tasks.length === 0 ? (
                             <div className="p-6 text-[#6B7280]">
-                                Aucune tâche pour l’instant.
+                                Aucune tâche pour l'instant.
                             </div>
                         ) : (
                             tasks.map((t) => (
@@ -183,7 +200,7 @@ export default function DashboardPage() {
 
                 {/* Pagination + choix du nombre d'éléments */}
                 <div className="mt-4 flex flex-col gap-3 text-sm text-[#6B7280] sm:flex-row sm:items-center sm:justify-between">
-                    {/* gauche : choix du nombre d'éléments */}
+                    {/* À gauche : choix du nombre d'éléments */}
                     <div className="flex items-center gap-2">
                         <span>Éléments par page :</span>
                         <select
@@ -202,7 +219,7 @@ export default function DashboardPage() {
                         </select>
                     </div>
 
-                    {/* droite : numéro de page + boutons */}
+                    {/* À droite : numéro de page + boutons */}
                     <div className="flex items-center gap-2 justify-end">
                         <span>
                             Page {page} / {totalPages || 1}
