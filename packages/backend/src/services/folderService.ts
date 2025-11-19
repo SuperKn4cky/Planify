@@ -44,4 +44,23 @@ export default class FolderService {
 
         return { id: created.id, name: created.name };
     }
+
+    public async getFoldersForUser(
+        userId: number,
+    ): Promise<Array<{ id: number; name: string; permission: string }>> {
+        const rows = await this.db
+            .select({
+                id: folders.id,
+                name: folders.name,
+                permission: users_own_folders.permission,
+            })
+            .from(folders)
+            .innerJoin(
+                users_own_folders,
+                eq(users_own_folders.folder_id, folders.id),
+            )
+            .where(eq(users_own_folders.user_id, userId));
+
+        return rows;
+    }
 }

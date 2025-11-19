@@ -37,4 +37,24 @@ export default class FolderController {
             next(error);
         }
     }
+
+    public async listFolders(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const data = await this.folderService.getFoldersForUser(
+                req.user.id,
+            );
+
+            res.status(200).json({ data });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

@@ -166,5 +166,11 @@ export default class Routes {
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.folderController.createFolder.bind(this.folderController),
         );
+
+        this.app.get(
+            "/folders",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.folderController.listFolders.bind(this.folderController),
+        );
     }
 }
