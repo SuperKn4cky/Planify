@@ -35,7 +35,6 @@ export default function DashboardPage() {
     const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
 
-    // État pour le bouton flottant mobile (+)
     const [isFabOpen, setFabOpen] = useState(false);
 
     useEffect(() => {
