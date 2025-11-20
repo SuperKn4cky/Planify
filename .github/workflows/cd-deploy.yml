@@ -16,6 +16,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
+      - name: Copy compose file via SCP
+        uses: appleboy/scp-action@v1
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          port: ${{ secrets.SSH_PORT }}
+          key: ${{ secrets.SSH_KEY }}
+          source: "compose.yml"
+          target: "/app/Planify/"
+
       - name: Deploy over SSH
         uses: appleboy/ssh-action@v1.0.3
         with:
@@ -26,16 +36,27 @@ jobs:
           script: |
             echo "Déploiement de la version ${APP_VERSION}"
 
-            APP_DIR=/var/www/mon-app
-
-            if [ ! -d "$APP_DIR" ]; then
-              git clone git@github.com:mon-org/mon-repo.git "$APP_DIR"
-            fi
-
+            APP_DIR=/app/Planify/
+            mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
-            git fetch --all --tags
-            git checkout "${APP_VERSION}"
+            cat > .env <<EOF
+            JWTSECRET=${{ secrets.JWTSECRET }}
+            APPDOMAIN=${{ secrets.APPDOMAIN }}
+
+            POSTGRESDB=${{ secrets.POSTGRESDB }}
+            POSTGRESUSER=${{ secrets.POSTGRESUSER }}
+            POSTGRESPASSWORD=${{ secrets.POSTGRESPASSWORD }}
+            DATABASEURL=postgres://${{ secrets.POSTGRESUSER }}:${{ secrets.POSTGRESPASSWORD }}@db:5432/${{ secrets.POSTGRESDB }}
+
+            SMTPHOST=${{ secrets.SMTPHOST }}
+            SMTPPORT=${{ secrets.SMTPPORT }}
+            SMTPSECURE=${{ secrets.SMTPSECURE }}
+            SMTPUSER=${{ secrets.SMTPUSER }}
+            SMTPPASS=${{ secrets.SMTPPASS }}
+
+            ACMEEMAIL=${{ secrets.ACMEEMAIL }}
+            EOF
 
             docker compose pull
             docker compose up -d --remove-orphans
