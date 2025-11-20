@@ -172,5 +172,11 @@ export default class Routes {
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.folderController.listFolders.bind(this.folderController),
         );
+
+        this.app.delete(
+            "/folders/:id",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.folderController.deleteFolder.bind(this.folderController),
+        );
     }
 }

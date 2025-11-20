@@ -38,6 +38,32 @@ export default class FolderController {
         }
     }
 
+    public async deleteFolder(
+        req: Request,
+        res: Response,
+        next: NextFunction,
+    ): Promise<void> {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const rawId = req.params.id;
+            const id = Number.parseInt(rawId, 10);
+            if (!Number.isFinite(id) || id <= 0) {
+                throw new AppError("Invalid folder id", 400);
+            }
+
+            await this.folderService.deleteFolder(id, req.user.id);
+
+            res.status(200).json({
+                message: "Folder deleted successfully",
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
+
     public async listFolders(
         req: Request,
         res: Response,

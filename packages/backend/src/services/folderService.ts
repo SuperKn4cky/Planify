@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { and, eq } from "drizzle-orm";
 import type { DB } from "../db/drizzle.js";
-import { folders, users_own_folders } from "../db/schema.js";
+import { folders, users_own_folders, tasks } from "../db/schema.js";
 import AppError from "../middlewares/errorHandler.js";
 
 export default class FolderService {
@@ -43,6 +43,50 @@ export default class FolderService {
         });
 
         return { id: created.id, name: created.name };
+    }
+
+    public async deleteFolder(folderId: number, userId: number): Promise<void> {
+        const [link] = await this.db
+            .select({
+                permission: users_own_folders.permission,
+            })
+            .from(users_own_folders)
+            .where(
+                and(
+                    eq(users_own_folders.folder_id, folderId),
+                    eq(users_own_folders.user_id, userId),
+                ),
+            )
+            .limit(1);
+
+        if (!link) {
+            throw new AppError(
+                "You do not have permission on this folder",
+                403,
+            );
+        }
+
+        if (link.permission !== "owner") {
+            throw new AppError("Only the owner can delete this folder", 403);
+        }
+
+        await this.db
+            .update(tasks)
+            .set({ folder_id: null })
+            .where(eq(tasks.folder_id, folderId));
+
+        await this.db
+            .delete(users_own_folders)
+            .where(eq(users_own_folders.folder_id, folderId));
+
+        const deleted = await this.db
+            .delete(folders)
+            .where(eq(folders.id, folderId))
+            .returning();
+
+        if (deleted.length === 0) {
+            throw new AppError("Folder not found", 404);
+        }
     }
 
     public async getFoldersForUser(
