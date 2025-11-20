@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from "react";
+import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { Plus, FolderPlus, Search } from "lucide-react";
 import TaskItem from "@/features/tasks/components/TaskItem";
 import type { Task, TaskPriority, TaskStatus } from "@/features/tasks/types";
@@ -10,6 +11,7 @@ import {
     listTasks,
     createFolder,
     listFolders,
+    deleteFolder,
 } from "@/features/tasks/api";
 import { CreateTaskDialog } from "@/features/tasks/components/CreateTaskDialog";
 import { CreateFolderDialog } from "@/features/tasks/components/CreateFolderDialog";
@@ -27,6 +29,7 @@ export default function DashboardPage() {
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
     const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
+    const [openDeleteFolder, setOpenDeleteFolder] = useState(false);
 
     const [page, setPage] = useState(1);
     const [pageSize, setPageSize] = useState(10);
@@ -100,10 +103,33 @@ export default function DashboardPage() {
         setCreateFolderOpen(false);
     }
 
+    async function handleDeleteCurrentFolderConfirm() {
+        if (folderId === "all") {
+            setOpenDeleteFolder(false);
+            return;
+        }
+        const folder = folders.find((f) => f.id === folderId);
+        if (!folder) {
+            setOpenDeleteFolder(false);
+            return;
+        }
+
+        await deleteFolder(folder.id);
+
+        setFolders((cur) => cur.filter((f) => f.id !== folder.id));
+        setFolderId("all");
+        setOpenDeleteFolder(false);
+    }
+
     async function onDeleteTask(id: number) {
         await deleteTask(id);
         setTasks((cur) => cur.filter((t) => t.id !== id));
     }
+
+    const selectedFolder =
+        folderId === "all"
+            ? null
+            : (folders.find((f) => f.id === folderId) ?? null);
 
     return (
         <>
@@ -216,14 +242,21 @@ export default function DashboardPage() {
                             <option value="mine">Mes tâches</option>
                             <option value="shared">Partagées avec moi</option>
                         </select>
-
-                        {/* <button
-                            type="button"
-                            className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px text-[#0F172A] hover:bg-[#ECEFED]"
-                        >
-                            Tags :
-                        </button> */}
                     </div>
+
+                    {/* Bouton de suppression de dossier sous les filtres */}
+                    {selectedFolder && (
+                        <div className="mt-2">
+                            <button
+                                type="button"
+                                onClick={() => setOpenDeleteFolder(true)}
+                                className="text-sm text-[#DC2626] underline-offset-2 hover:underline"
+                            >
+                                Supprimer le dossier sélectionné :{" "}
+                                {selectedFolder.name}
+                            </button>
+                        </div>
+                    )}
                 </div>
 
                 {/* Liste */}
@@ -313,6 +346,21 @@ export default function DashboardPage() {
                 open={isCreateFolderOpen}
                 onClose={() => setCreateFolderOpen(false)}
                 onCreate={handleCreateFolder}
+            />
+
+            <ConfirmDialog
+                open={openDeleteFolder}
+                onClose={() => setOpenDeleteFolder(false)}
+                onConfirm={handleDeleteCurrentFolderConfirm}
+                title="Supprimer le dossier"
+                description={
+                    selectedFolder
+                        ? `Le dossier "${selectedFolder.name}" sera supprimé. Les tâches resteront mais sans dossier.`
+                        : "Ce dossier sera supprimé. Les tâches resteront mais sans dossier."
+                }
+                confirmLabel="Supprimer"
+                cancelLabel="Annuler"
+                tone="danger"
             />
         </>
     );

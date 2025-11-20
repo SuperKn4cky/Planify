@@ -58,18 +58,6 @@ export async function listTasks(params?: {
     }>(path);
 }
 
-export async function updateTask(id: number, patch: Partial<Task>) {
-    // TODO: PUT /tasks/:id
-    // return putJSON<Task>(`api/tasks/${id}`, patch);
-    return { id, ...patch } as Task; // placeholder
-}
-
-export async function toggleTaskStatus(id: number, status: TaskStatus) {
-    // TODO: PATCH /tasks/:id/status
-    // return putJSON<Task>(`api/tasks/${id}/status`, { status });
-    return { id, status } as Task; // placeholder
-}
-
 export async function listFolders() {
     const res = await getJSON<{
         data: Array<{ id: number; name: string; permission: string }>;
@@ -85,4 +73,8 @@ export async function createFolder(name: string) {
     }>("api/folders", { name });
 
     return res.data;
+}
+
+export async function deleteFolder(id: number) {
+    return delJSON<{ message: string }>(`api/folders/${id}`);
 }
