@@ -35,6 +35,9 @@ export default function DashboardPage() {
     const [pageSize, setPageSize] = useState(10);
     const [totalPages, setTotalPages] = useState(1);
 
+    // État pour le bouton flottant mobile (+)
+    const [isFabOpen, setFabOpen] = useState(false);
+
     useEffect(() => {
         let aborted = false;
         setLoading(true);
@@ -135,14 +138,20 @@ export default function DashboardPage() {
         <>
             {/* En-tête pleine largeur avec bordure basse */}
             <div className="border-b border-[#E5E7EB] bg-white">
-                <div className="mx-auto flex max-w-5xl flex-col gap-4 py-4 text-[#0F172A] sm:flex-row sm:items-center sm:justify-between">
-                    <h1 className="text-2xl font-semibold">Dashboard</h1>
+                <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 py-4 text-[#0F172A] sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-1 text-center sm:text-left">
+                        <h1 className="text-2xl font-semibold">Dashboard</h1>
+                        <p className="text-14px text-[#6B7280]">
+                            Gérez vos tâches, dossiers et filtres depuis ce
+                            tableau de bord.
+                        </p>
+                    </div>
 
                     <div className="flex items-center gap-2">
                         <button
                             type="button"
                             onClick={() => setCreateTaskOpen(true)}
-                            className="inline-flex h-10 items-center gap-2 rounded-lg bg-[#2563EB] px-4 text-15px font-medium text-white hover:bg-[#1D4ED8]"
+                            className="hidden h-10 items-center gap-2 rounded-lg bg-[#2563EB] px-4 text-15px font-medium text-white hover:bg-[#1D4ED8] md:inline-flex"
                         >
                             <Plus className="h-5 w-5" />
                             Nouvelle tâche
@@ -151,7 +160,7 @@ export default function DashboardPage() {
                         <button
                             type="button"
                             onClick={() => setCreateFolderOpen(true)}
-                            className="inline-flex h-10 items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 text-15px text-[#0F172A] hover:bg-[#ECEFED]"
+                            className="hidden h-10 items-center gap-2 rounded-lg border border-[#E5E7EB] bg-white px-4 text-15px text-[#0F172A] hover:bg-[#ECEFED] md:inline-flex"
                         >
                             <FolderPlus className="h-5 w-5" />
                             Nouveau dossier
@@ -283,8 +292,8 @@ export default function DashboardPage() {
                 </div>
 
                 {/* Pagination + choix du nombre d'éléments */}
-                <div className="mt-4 flex flex-col gap-3 text-sm text-[#6B7280] sm:flex-row sm:items-center sm:justify-between">
-                    {/* À gauche : choix du nombre d'éléments */}
+                <div className="mt-4 flex flex-col items-end gap-3 text-sm text-[#6B7280] sm:flex-row sm:items-center sm:justify-between">
+                    {/* À gauche (desktop) / en haut (mobile) : choix du nombre d'éléments */}
                     <div className="flex items-center gap-2">
                         <span>Éléments par page :</span>
                         <select
@@ -362,6 +371,45 @@ export default function DashboardPage() {
                 cancelLabel="Annuler"
                 tone="danger"
             />
+
+            {/* Bouton flottant mobile pour créer tâche / dossier */}
+            <div className="fixed bottom-4 right-4 flex flex-col items-end md:hidden">
+                {isFabOpen && (
+                    <div className="mb-3 w-56 rounded-lg border border-[#E5E7EB] bg-white p-2 shadow-lg">
+                        <button
+                            type="button"
+                            className="flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-[#111827] hover:bg-[#F3F4F6]"
+                            onClick={() => {
+                                setFabOpen(false);
+                                setCreateTaskOpen(true);
+                            }}
+                        >
+                            <Plus className="h-4 w-4" />
+                            <span>Nouvelle tâche</span>
+                        </button>
+                        <button
+                            type="button"
+                            className="mt-1 flex w-full items-center gap-2 rounded-md px-3 py-2 text-sm text-[#111827] hover:bg-[#F3F4F6]"
+                            onClick={() => {
+                                setFabOpen(false);
+                                setCreateFolderOpen(true);
+                            }}
+                        >
+                            <FolderPlus className="h-4 w-4" />
+                            <span>Nouveau dossier</span>
+                        </button>
+                    </div>
+                )}
+
+                <button
+                    type="button"
+                    onClick={() => setFabOpen((open) => !open)}
+                    className="flex h-14 w-14 items-center justify-center rounded-full bg-[#2563EB] text-white shadow-lg shadow-black/30"
+                    aria-label="Actions de création"
+                >
+                    <Plus className="h-6 w-6" />
+                </button>
+            </div>
         </>
     );
 }
