@@ -13,6 +13,10 @@ type Item = {
     icon: React.ComponentType<React.SVGProps<SVGSVGElement>>;
 };
 
+interface SidebarProps {
+    onNavigate?: () => void;
+}
+
 const top: Item[] = [
     { href: "/dashboard", label: "Tâches", icon: FileCheck },
     { href: "/contacts", label: "Contacts", icon: Users },
@@ -27,12 +31,21 @@ const bottomGuest: Item[] = [
     { href: "/auth/register", label: "Inscription", icon: User },
 ];
 
-function NavLink({ item, active }: { item: Item; active: boolean }) {
+function NavLink({
+    item,
+    active,
+    onClick,
+}: {
+    item: Item;
+    active: boolean;
+    onClick?: () => void;
+}) {
     const Icon = item.icon;
 
     return (
         <Link
             href={item.href}
+            onClick={onClick}
             className={[
                 "flex items-center gap-3 rounded-md px-3 py-2 transition-colors",
                 "text-[#0F172A]",
@@ -45,11 +58,20 @@ function NavLink({ item, active }: { item: Item; active: boolean }) {
     );
 }
 
-export default function Sidebar() {
+export default function Sidebar({ onNavigate }: SidebarProps) {
     const pathname = usePathname();
     const { isAuthenticated, logout } = useAuth();
 
     const bottomItems = isAuthenticated ? bottomConnected : bottomGuest;
+
+    const handleNavigate = () => {
+        onNavigate?.();
+    };
+
+    const handleLogout = async () => {
+        await logout();
+        onNavigate?.();
+    };
 
     return (
         <aside
@@ -76,6 +98,7 @@ export default function Sidebar() {
                             key={it.href}
                             item={it}
                             active={pathname?.startsWith(it.href) ?? false}
+                            onClick={handleNavigate}
                         />
                     ))}
                 </nav>
@@ -89,6 +112,7 @@ export default function Sidebar() {
                             key={it.href}
                             item={it}
                             active={pathname?.startsWith(it.href) ?? false}
+                            onClick={handleNavigate}
                         />
                     ))}
                 </div>
@@ -96,7 +120,7 @@ export default function Sidebar() {
                 {isAuthenticated && (
                     <button
                         type="button"
-                        onClick={logout}
+                        onClick={handleLogout}
                         className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-[#0F172A] hover:bg-[#ECEFED] transition-colors"
                     >
                         <LogOut className="h-[28px] w-[28px] stroke-[1.8] text-[#0F172A]" />
