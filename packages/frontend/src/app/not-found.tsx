@@ -1,6 +1,6 @@
 export default function NotFound() {
     return (
-        <div className="grid min-h-dvh place-items-center bg-white text-[#0F172A]">
+        <div className="grid h-full place-items-center bg-white text-[#0F172A]">
             <div className="text-center px-6">
                 <p className="text-sm/6 opacity-70">Erreur 404</p>
                 <h1 className="mt-2 text-3xl font-semibold">
