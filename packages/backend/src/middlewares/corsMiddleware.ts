@@ -2,7 +2,7 @@ import cors from "cors";
 
 const LOCAL_ALLOWLIST = new Set<string>([
     "http://localhost:3000",
-    "http://planify",
+    "http://Planify-front:3000",
 ]);
 
 export const corsOptions = (): cors.CorsOptions => {
