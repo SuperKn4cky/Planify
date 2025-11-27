@@ -29,6 +29,7 @@ export async function listTasks(params?: {
     page?: number;
     pageSize?: number;
     scope?: "all" | "mine" | "shared";
+    dueDate?: "all" | "overdue" | "today" | "week" | "month" | "none";
 }) {
     const search = new URLSearchParams();
 
@@ -44,6 +45,9 @@ export async function listTasks(params?: {
     if (params?.pageSize) search.set("page_size", String(params.pageSize));
     if (params?.scope && params.scope !== "all") {
         search.set("scope", params.scope);
+    }
+    if (params?.dueDate) {
+        search.set("due_date", params.dueDate);
     }
 
     const qs = search.toString();

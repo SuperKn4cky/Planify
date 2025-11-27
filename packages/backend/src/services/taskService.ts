@@ -16,6 +16,7 @@ type TaskListFilters = {
     scope: "all" | "mine" | "shared";
     query: string | null;
     folderId: number | null;
+    dueDate: "all" | "overdue" | "today" | "week" | "month" | "none";
 };
 
 export default class TaskService {
@@ -293,6 +294,35 @@ export default class TaskService {
                 whereParts.push(sql`${tasks.folder_id} IS NULL`);
             } else {
                 whereParts.push(eq(tasks.folder_id, filters.folderId));
+            }
+        }
+
+        if (filters.dueDate !== "all") {
+            const now = new Date();
+            now.setHours(0, 0, 0, 0);
+
+            if (filters.dueDate === "none") {
+                whereParts.push(sql`${tasks.due_date} IS NULL`);
+            } else if (filters.dueDate === "overdue") {
+                whereParts.push(sql`${tasks.due_date} < ${now.toISOString()}`);
+            } else if (filters.dueDate === "today") {
+                const tomorrow = new Date(now);
+                tomorrow.setDate(tomorrow.getDate() + 1);
+                whereParts.push(
+                    sql`${tasks.due_date} >= ${now.toISOString()} AND ${tasks.due_date} < ${tomorrow.toISOString()}`,
+                );
+            } else if (filters.dueDate === "week") {
+                const nextWeek = new Date(now);
+                nextWeek.setDate(nextWeek.getDate() + 7);
+                whereParts.push(
+                    sql`${tasks.due_date} >= ${now.toISOString()} AND ${tasks.due_date} < ${nextWeek.toISOString()}`,
+                );
+            } else if (filters.dueDate === "month") {
+                const nextMonth = new Date(now);
+                nextMonth.setMonth(nextMonth.getMonth() + 1);
+                whereParts.push(
+                    sql`${tasks.due_date} >= ${now.toISOString()} AND ${tasks.due_date} < ${nextMonth.toISOString()}`,
+                );
             }
         }
 

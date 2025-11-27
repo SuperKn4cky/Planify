@@ -197,6 +197,8 @@ export default class TaskController {
             const rawSort = (req.query.sort as string | undefined) ?? "recent";
             const rawScope = (req.query.scope as string | undefined) ?? "all";
             const rawQuery = (req.query.q as string | undefined)?.trim() ?? "";
+            const rawDueDate =
+                (req.query.due_date as string | undefined) ?? "all";
 
             let folderId: number | null = null;
             if (rawFolderId && rawFolderId !== "all") {
@@ -225,6 +227,15 @@ export default class TaskController {
 
             const query = rawQuery.length > 0 ? rawQuery : null;
 
+            const dueDate =
+                rawDueDate === "overdue" ||
+                rawDueDate === "today" ||
+                rawDueDate === "week" ||
+                rawDueDate === "month" ||
+                rawDueDate === "none"
+                    ? rawDueDate
+                    : "all";
+
             const { items, total } = await this.taskService.getTasksForUser(
                 req.user.id,
                 page,
@@ -235,6 +246,7 @@ export default class TaskController {
                     scope,
                     query,
                     folderId,
+                    dueDate,
                 },
             );
 

@@ -26,6 +26,9 @@ export default function DashboardPage() {
         Array<{ id: number; name: string; permission?: string }>
     >([]);
     const [folderId, setFolderId] = useState<number | "all" | "none">("all");
+    const [dueDate, setDueDate] = useState<
+        "all" | "overdue" | "today" | "week" | "month" | "none"
+    >("all");
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
     const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
@@ -41,7 +44,16 @@ export default function DashboardPage() {
         let aborted = false;
         setLoading(true);
 
-        listTasks({ q: query, status, sort, scope, page, pageSize, folderId })
+        listTasks({
+            q: query,
+            status,
+            sort,
+            scope,
+            page,
+            pageSize,
+            folderId,
+            dueDate,
+        })
             .then((res) => {
                 if (aborted) return;
                 setTasks(res.items);
@@ -58,7 +70,7 @@ export default function DashboardPage() {
         return () => {
             aborted = true;
         };
-    }, [query, status, sort, scope, page, pageSize, folderId]);
+    }, [query, status, sort, scope, page, pageSize, folderId, dueDate]);
 
     useEffect(() => {
         let aborted = false;
@@ -242,6 +254,24 @@ export default function DashboardPage() {
                                     {f.name}
                                 </option>
                             ))}
+                        </select>
+
+                        {/* Date */}
+                        <select
+                            value={dueDate}
+                            onChange={(e) => {
+                                setDueDate(e.target.value as typeof dueDate);
+                                setPage(1);
+                            }}
+                            className="h-10 rounded-lg border border-[#E5E7EB] bg-white px-3 text-15px"
+                            aria-label="Filtrer par échéance"
+                        >
+                            <option value="all">Toutes les échéances</option>
+                            <option value="overdue">En retard</option>
+                            <option value="today">Aujourd'hui</option>
+                            <option value="week">Cette semaine</option>
+                            <option value="month">Ce mois-ci</option>
+                            <option value="none">Sans échéance</option>
                         </select>
 
                         {/* Mes tâches / partagées */}
