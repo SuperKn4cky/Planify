@@ -135,8 +135,8 @@ export default function DashboardPage() {
 
     return (
         <>
-            {/* En-tête pleine largeur avec bordure basse */}
-            <div className="border-b border-[#E5E7EB] bg-white">
+            {/* En-tête */}
+            <div className="sticky top-0 z-10 border-b border-[#E5E7EB] bg-white">
                 <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 py-4 text-[#0F172A] sm:flex-row sm:items-center sm:justify-between">
                     <div className="flex flex-col gap-1 text-center sm:text-left">
                         <h1 className="text-2xl font-semibold">Dashboard</h1>
