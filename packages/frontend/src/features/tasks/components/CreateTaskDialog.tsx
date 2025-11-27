@@ -19,7 +19,7 @@ type CreateTaskDialogProps = {
         folder_id?: number | null;
     }) => Promise<void>;
     folders: Array<{ id: number; name: string }>;
-    defaultFolderId?: number | "all";
+    defaultFolderId?: number | "all" | "none";
 };
 
 export function CreateTaskDialog({

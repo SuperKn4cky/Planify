@@ -25,7 +25,7 @@ export default function DashboardPage() {
     const [folders, setFolders] = useState<
         Array<{ id: number; name: string; permission?: string }>
     >([]);
-    const [folderId, setFolderId] = useState<number | "all">("all");
+    const [folderId, setFolderId] = useState<number | "all" | "none">("all");
     const [loading, setLoading] = useState(false);
     const [isCreateTaskOpen, setCreateTaskOpen] = useState(false);
     const [isCreateFolderOpen, setCreateFolderOpen] = useState(false);
@@ -215,12 +215,20 @@ export default function DashboardPage() {
                         {/* Dossier */}
                         <select
                             value={
-                                folderId === "all" ? "all" : String(folderId)
+                                folderId === "all"
+                                    ? "all"
+                                    : folderId === "none"
+                                      ? "none"
+                                      : String(folderId)
                             }
                             onChange={(e) => {
                                 const value = e.target.value;
                                 setFolderId(
-                                    value === "all" ? "all" : Number(value),
+                                    value === "all"
+                                        ? "all"
+                                        : value === "none"
+                                          ? "none"
+                                          : Number(value),
                                 );
                                 setPage(1);
                             }}
@@ -228,6 +236,7 @@ export default function DashboardPage() {
                             aria-label="Filtrer par dossier"
                         >
                             <option value="all">Tous les dossiers</option>
+                            <option value="none">Sans dossier</option>
                             {folders.map((f) => (
                                 <option key={f.id} value={f.id}>
                                     {f.name}

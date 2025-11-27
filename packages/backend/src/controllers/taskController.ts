@@ -200,11 +200,15 @@ export default class TaskController {
 
             let folderId: number | null = null;
             if (rawFolderId && rawFolderId !== "all") {
-                const parsed = Number.parseInt(rawFolderId, 10);
-                if (!Number.isFinite(parsed) || parsed <= 0) {
-                    throw new AppError("Invalid folderId parameter", 400);
+                if (rawFolderId === "none") {
+                    folderId = -1;
+                } else {
+                    const parsed = Number.parseInt(rawFolderId, 10);
+                    if (!Number.isFinite(parsed) || parsed <= 0) {
+                        throw new AppError("Invalid folderId parameter", 400);
+                    }
+                    folderId = parsed;
                 }
-                folderId = parsed;
             }
 
             const status =

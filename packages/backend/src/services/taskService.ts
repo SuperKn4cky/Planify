@@ -289,7 +289,11 @@ export default class TaskService {
         }
 
         if (filters.folderId !== null) {
-            whereParts.push(eq(tasks.folder_id, filters.folderId));
+            if (filters.folderId === -1) {
+                whereParts.push(sql`${tasks.folder_id} IS NULL`);
+            } else {
+                whereParts.push(eq(tasks.folder_id, filters.folderId));
+            }
         }
 
         if (filters.scope === "mine") {

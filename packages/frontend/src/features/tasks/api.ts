@@ -24,7 +24,7 @@ export async function deleteTask(id: number) {
 export async function listTasks(params?: {
     q?: string;
     status?: "all" | TaskStatus;
-    folderId?: number | "all";
+    folderId?: number | "all" | "none";
     sort?: "recent" | "oldest";
     page?: number;
     pageSize?: number;
