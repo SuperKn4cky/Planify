@@ -75,7 +75,7 @@ export default function Sidebar({ onNavigate }: SidebarProps) {
 
     return (
         <aside
-            className="flex h-dvh w-[260px] flex-col justify-between bg-[#F5F7F4] px-6 py-8"
+            className="sticky top-0 flex h-dvh w-[260px] flex-col justify-between bg-[#F5F7F4] px-6 py-8"
             aria-label="Navigation principale"
         >
             {/* Marque + liens du haut */}
