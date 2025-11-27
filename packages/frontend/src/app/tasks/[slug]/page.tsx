@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Calendar } from "lucide-react";
+import { Calendar, ArrowLeft } from "lucide-react";
 import type { TaskPriority, TaskStatus } from "@/features/tasks/types";
 import { taskSchema } from "@/features/tasks/validation";
 import { ApiError, getJSON, postJSON, delJSON, putJSON } from "@/lib/api";
@@ -212,6 +212,16 @@ export default function TaskEditPage() {
 
     return (
         <div className="mx-auto max-w-3xl py-8 text-[#0F172A]">
+            {/* Bouton retour mobile */}
+            <button
+                type="button"
+                onClick={() => router.push("/dashboard")}
+                className="mb-4 flex items-center gap-2 text-[#6B7280] hover:text-[#0F172A] md:hidden"
+            >
+                <ArrowLeft className="h-5 w-5" />
+                <span>Retour au dashboard</span>
+            </button>
+
             <h1 className="text-2xl font-semibold">Modifier la tâche</h1>
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
