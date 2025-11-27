@@ -260,8 +260,7 @@ describe("POST /auth/logout & /auth/logout-all", () => {
 
 describe("Jeton avec signature invalide", () => {
     it(
-        "GET /users/me -> 401 et clearCookie " +
-            "quand le JWT est signé avec une autre clé que celle du backend",
+        "GET /users/me -> 401 et clearCookie ",
         async () => {
             const wrongSecret = new TextEncoder().encode(
                 "not_the_real_backend_secret",
