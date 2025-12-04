@@ -217,27 +217,18 @@ export default class TaskService {
 
         const updateData: Partial<typeof tasks.$inferInsert> = {};
 
-        if (payload.title !== undefined) {
-            updateData.title = payload.title;
-        }
-        if (payload.description !== undefined) {
+        if (payload.title !== undefined) updateData.title = payload.title;
+        if (payload.description !== undefined)
             updateData.description = payload.description;
-        }
-        if (payload.folder_id !== undefined) {
+        if (payload.folder_id !== undefined)
             updateData.folder_id = payload.folder_id;
-        }
-        if (payload.responsible_user !== undefined) {
+        if (payload.responsible_user !== undefined)
             updateData.responsible_user = payload.responsible_user;
-        }
-        if (payload.due_date !== undefined) {
+        if (payload.due_date !== undefined)
             updateData.due_date = payload.due_date;
-        }
-        if (payload.status !== undefined) {
-            updateData.status = payload.status;
-        }
-        if (payload.priority !== undefined) {
+        if (payload.status !== undefined) updateData.status = payload.status;
+        if (payload.priority !== undefined)
             updateData.priority = payload.priority;
-        }
 
         if (Object.keys(updateData).length === 0) {
             return new Task(existing[0], true);
