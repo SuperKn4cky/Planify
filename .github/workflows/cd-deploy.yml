@@ -16,14 +16,14 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Copy compose file via SCP
+      - name: Copy compose & scripts via SCP
         uses: appleboy/scp-action@v1
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           port: ${{ secrets.SSH_PORT }}
           key: ${{ secrets.SSH_KEY }}
-          source: "compose.yml"
+          source: "compose.yml,scripts/backup_planify.sh,scripts/restore_planify.sh"
           target: "/app/Planify/"
 
       - name: Deploy over SSH
@@ -35,8 +35,8 @@ jobs:
           key: ${{ secrets.SSH_KEY }}
           script: |
             echo "Déploiement de la version ${APP_VERSION}"
-
             APP_DIR=/app/Planify/
+
             mkdir -p "$APP_DIR"
             cd "$APP_DIR"
 
@@ -60,5 +60,12 @@ jobs:
 
             docker compose pull
             docker compose up -d --remove-orphans
+
+            chmod +x scripts/backup_planify.sh
+            chmod +x scripts/restore_planify.sh
+
+            ( crontab -l 2>/dev/null | grep -v 'backup_planify.sh'; \
+            echo "0 3 * * * APP_DIR=$APPDIR BACKUP_DIR=$APPDIR/backups bash $APPDIR/scripts/backup_planify.sh >> $APPDIR/backup.log 2>&1" \
+            ) | crontab -
 
             echo "Déploiement terminé pour ${APP_VERSION}"
