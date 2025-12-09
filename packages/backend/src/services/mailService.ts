@@ -8,7 +8,7 @@ type UserInfo = {
 
 export default class MailService {
   private transporter: Transporter;
-  private from: string = "planify@ecole-89.online";
+  private from: string;
   private appDomain: string;
 
   public constructor() {
@@ -26,6 +26,7 @@ export default class MailService {
     });
 
     this.appDomain = process.env.APP_DOMAIN ?? "localhost";
+    this.from = process.env.MAIL_FROM ?? "no-reply@localhost";
   }
 
   public async sendContactInvitation(opts: {
