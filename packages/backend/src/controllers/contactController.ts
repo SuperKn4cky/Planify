@@ -62,4 +62,29 @@ export default class ContactController {
             next(error);
         }
     }
+
+    public async acceptInvitation(req: Request, res: Response, next: NextFunction) {
+        try {
+            if (!req.user?.id) {
+                throw new AppError("User not authenticated", 401);
+            }
+
+            const token = req.body.token as string | undefined;
+            if (!token) {
+                throw new AppError("Token is required", 400);
+            }
+
+            const contact = await this.contactService.acceptInvitation(
+                req.user.id,
+                token,
+            );
+
+            res.status(201).json({
+                message: "Contact added successfully",
+                data: contact,
+            });
+        } catch (error) {
+            next(error);
+        }
+    }
 }

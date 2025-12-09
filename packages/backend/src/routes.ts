@@ -59,7 +59,7 @@ export default class Routes {
         this.folderService = new FolderService(this.db);
         this.folderController = new FolderController(this.folderService);
 
-        this.contactService = new ContactService(db , this.mailService);
+        this.contactService = new ContactService(db, this.mailService, this.authService);
         this.contactController = new ContactController(this.contactService);
     }
 
@@ -207,6 +207,12 @@ export default class Routes {
             "/contacts",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.contactController.addContact.bind(this.contactController),
+        );
+
+        this.app.post(
+            "/contacts/accept",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.contactController.acceptInvitation.bind(this.contactController),
         );
 
         this.app.delete(
