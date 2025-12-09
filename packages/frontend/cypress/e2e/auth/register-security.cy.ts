@@ -31,7 +31,7 @@ describe("Sécurité - Register", () => {
             expect(response?.statusCode).to.eq(201);
             const setCookie = String(response?.headers?.["set-cookie"] ?? "");
             expect(setCookie).to.include("HttpOnly");
-            expect(setCookie).to.include("SameSite=Lax");
+            expect(setCookie).to.include("SameSite=Strict");
         });
         cy.document().then((doc) => {
             expect(doc.cookie).to.not.include("auth=");

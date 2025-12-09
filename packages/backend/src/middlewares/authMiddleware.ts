@@ -14,12 +14,7 @@ export default class AuthMiddleware {
         res: Response,
         next: NextFunction,
     ): Promise<void> {
-        let token: string | undefined;
-        const authCookie = req.cookies?.auth;
-
-        if (authCookie?.startsWith("Bearer ")) {
-            token = authCookie.replace("Bearer ", "");
-        }
+        let token: string | undefined = req.cookies?.auth;
 
         if (!token) {
             res.status(401).json({ error: "Token is missing" });

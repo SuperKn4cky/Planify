@@ -63,7 +63,7 @@ describe("POST /auth/register", () => {
         const cookies = getSetCookieArray(response.headers);
         expect(cookies.length).toBeGreaterThan(0);
         expect(cookies[0]).toMatch(
-            /^auth=Bearer%20[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Lax$/,
+            /^auth=[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Strict$/,
         );
     });
 });
@@ -120,7 +120,7 @@ describe("POST /auth/login", () => {
         const cookies = getSetCookieArray(response.headers);
         expect(cookies.length).toBeGreaterThan(0);
         expect(cookies[0]).toMatch(
-            /^auth=Bearer%20[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Lax$/,
+            /^auth=[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Strict$/,
         );
     });
 
@@ -141,7 +141,7 @@ describe("POST /auth/login", () => {
         expect(res.body?.error?.message).toBe("Invalid email or password");
     });
 
-    it("POST /auth/login -> 200, Set-Cookie auth=Bearer..., HttpOnly, SameSite=Lax (exact)", async () => {
+    it("POST /auth/login -> 200, Set-Cookie auth=token, HttpOnly, SameSite=strict", async () => {
         const u = newUser({ email_prefix: "login-ok" });
         await request(global.app).post("/auth/register").send(u).expect(201);
 
@@ -153,7 +153,7 @@ describe("POST /auth/login", () => {
         const cookies = getSetCookieArray(res.headers);
         expect(cookies.length).toBeGreaterThan(0);
         expect(cookies[0]).toMatch(
-            /^auth=Bearer%20[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Lax$/,
+            /^auth=[^;]+; Max-Age=604800; Path=\/; Expires=[A-Za-z]{3}, \d{2} [A-Za-z]{3} \d{4} \d{2}:\d{2}:\d{2} GMT; HttpOnly; SameSite=Strict$/,
         );
     });
 });
@@ -273,7 +273,7 @@ describe("Jeton avec signature invalide", () => {
 
             const res = await request(global.app)
                 .get("/users/me")
-                .set("Cookie", [`auth=Bearer ${fakeToken}`]);
+                .set("Cookie", [`auth=${fakeToken}`]);
 
             expect(res.status).toBe(401);
             expect(res.body.error).toBe("Invalid or expired token");
