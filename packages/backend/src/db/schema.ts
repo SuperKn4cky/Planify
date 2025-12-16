@@ -12,6 +12,21 @@ export const users = pgTable("users", {
     revocation_timestamp: timestamp("revocation_timestamp").notNull(),
 });
 
+export const has_contact = pgTable(
+    "has_contact",
+    {
+        user_id_1: integer("user_id_1")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+        user_id_2: integer("user_id_2")
+            .notNull()
+            .references(() => users.id, { onDelete: "cascade" }),
+    },
+    (t) => [
+        primaryKey({ columns: [t.user_id_1, t.user_id_2] }),
+    ],
+);
+
 export const tasks = pgTable("tasks", {
     id: serial("id").primaryKey().notNull(),
     folder_id: integer("folder_id").references(() => folders.id, { onDelete: "set null"}),

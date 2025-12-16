@@ -29,7 +29,7 @@ describe("Profil - /users/me", () => {
     it("PUT /users/me -> 401 si non authentifié", async () => {
         const res = await request(global.app)
             .put("/users/me")
-            .send({ first_name: "X" });
+            .send({ first_name: "John" });
         expect(res.status).toBe(401);
         expect(res.body?.error).toBe("Token is missing");
     });

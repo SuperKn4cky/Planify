@@ -26,10 +26,10 @@ export default class UserController {
             });
             const user = await this.userService.createUser(newUser);
             const ACCESS_TTL_SEC = 7 * 24 * 60 * 60 * 1000;
-            res.cookie("auth", "Bearer " + user.token, {
+            res.cookie("auth", user.token, {
                 httpOnly: true,
                 secure: isProduction,
-                sameSite: "lax",
+                sameSite: "strict",
                 path: "/",
                 maxAge: ACCESS_TTL_SEC,
             });
@@ -54,10 +54,10 @@ export default class UserController {
             }
             const token = await this.userService.loginUser(email, password);
             const ACCESS_TTL_SEC = 7 * 24 * 60 * 60 * 1000;
-            res.cookie("auth", "Bearer " + token, {
+            res.cookie("auth", token, {
                 httpOnly: true,
                 secure: isProduction,
-                sameSite: "lax",
+                sameSite: "strict",
                 path: "/",
                 maxAge: ACCESS_TTL_SEC,
             });

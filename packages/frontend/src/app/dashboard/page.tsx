@@ -35,7 +35,7 @@ export default function DashboardPage() {
     const [openDeleteFolder, setOpenDeleteFolder] = useState(false);
 
     const [page, setPage] = useState(1);
-    const [pageSize, setPageSize] = useState(10);
+    const [pageSize, setPageSize] = useState(5);
     const [totalPages, setTotalPages] = useState(1);
 
     const [isFabOpen, setFabOpen] = useState(false);

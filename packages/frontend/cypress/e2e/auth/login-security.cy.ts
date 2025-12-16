@@ -26,7 +26,7 @@ describe("Sécurité - Login", () => {
             .and("contain", "Email ou mot de passe incorrect.");
     });
 
-    it("login pose un cookie HttpOnly + SameSite=Lax et l'entête Set-Cookie est correct", () => {
+    it("login pose un cookie HttpOnly + SameSite=Strict et l'entête Set-Cookie est correct", () => {
         const email = uniqueEmail("login-cookie");
         cy.visit("/auth/register");
         cy.fillRegisterForm({
@@ -48,9 +48,8 @@ describe("Sécurité - Login", () => {
         cy.wait("@login").then(({ response }) => {
             expect(response?.statusCode).to.eq(200);
             const setCookie = String(response?.headers?.["set-cookie"] ?? "");
-            expect(setCookie).to.include("auth=Bearer");
             expect(setCookie).to.include("HttpOnly");
-            expect(setCookie).to.include("SameSite=Lax");
+            expect(setCookie).to.include("SameSite=Strict");
         });
     });
 });

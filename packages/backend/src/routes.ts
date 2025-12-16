@@ -2,12 +2,15 @@ import express, { Request, Response } from "express";
 import { DB } from "./db/drizzle.js";
 import AuthMiddleware from "./middlewares/authMiddleware.js";
 import AuthService from "./services/authService.js";
+import MailService from "./services/mailService.js";
 import UserController from "./controllers/userController.js";
 import UserService from "./services/userService.js";
 import TaskController from "./controllers/taskController.js";
 import TaskService from "./services/taskService.js";
 import FolderController from "./controllers/folderController.js";
 import FolderService from "./services/folderService.js";
+import ContactService from "./services/contactService.js";
+import ContactController from "./controllers/contactController.js";
 
 export default class Routes {
     private app: express.Application;
@@ -17,6 +20,8 @@ export default class Routes {
     private authMiddleware: AuthMiddleware;
     private authService: AuthService;
 
+    private mailService: MailService;
+
     private userController: UserController;
     private userService: UserService;
 
@@ -25,6 +30,9 @@ export default class Routes {
 
     private folderService: FolderService;
     private folderController: FolderController;
+
+    private contactService: ContactService;
+    private contactController: ContactController;
 
     public constructor(app: express.Application, db: DB, jwtSecret: string) {
         this.app = app;
@@ -41,6 +49,8 @@ export default class Routes {
 
         this.authMiddleware = new AuthMiddleware(this.authService);
 
+        this.mailService = new MailService();
+
         this.userController = new UserController(this.userService);
 
         this.taskService = new TaskService(this.db);
@@ -48,6 +58,9 @@ export default class Routes {
 
         this.folderService = new FolderService(this.db);
         this.folderController = new FolderController(this.folderService);
+
+        this.contactService = new ContactService(db, this.mailService, this.authService);
+        this.contactController = new ContactController(this.contactService);
     }
 
     public register(): void {
@@ -59,6 +72,9 @@ export default class Routes {
 
         // Folder routes
         this.foldersRoutes();
+
+        // Contact routes
+        this.contactsRoutes();
 
         // Health check endpoint
         this.app.get("/health", (req: Request, res: Response) => {
@@ -177,6 +193,32 @@ export default class Routes {
             "/folders/:id",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.folderController.deleteFolder.bind(this.folderController),
+        );
+    }
+
+    private contactsRoutes(): void {
+        this.app.get(
+            "/contacts",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.contactController.listContacts.bind(this.contactController),
+        );
+        
+        this.app.post(
+            "/contacts",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.contactController.addContact.bind(this.contactController),
+        );
+
+        this.app.post(
+            "/contacts/accept",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.contactController.acceptInvitation.bind(this.contactController),
+        );
+
+        this.app.delete(
+            "/contacts/:id",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.contactController.deleteContact.bind(this.contactController),
         );
     }
 }

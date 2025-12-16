@@ -40,7 +40,7 @@ describe("AuthMiddleware", () => {
     describe("isAuthenticated", () => {
         it("devrait appeler next() et définir req.user pour un jeton valide et non révoqué", async () => {
             const token = "valid_token_string";
-            mockRequest.cookies = { auth: `Bearer ${token}` };
+            mockRequest.cookies = { auth: `${token}` };
             mockAuthService.verifyToken.mockResolvedValue(decodedPayload);
             mockAuthService.verifyRevocation.mockResolvedValue(false);
 
@@ -76,26 +76,9 @@ describe("AuthMiddleware", () => {
             expect(mockNext).not.toHaveBeenCalled();
         });
 
-        it("devrait retourner 401 si le cookie 'auth' n'est pas au format 'Bearer <token>'", async () => {
-            mockRequest.cookies = { auth: "invalid_token_format" };
-
-            await authMiddleware.isAuthenticated(
-                mockRequest as Request,
-                mockResponse as Response,
-                mockNext,
-            );
-
-            expect(mockAuthService.verifyToken).not.toHaveBeenCalled();
-            expect(mockResponse.status).toHaveBeenCalledWith(401);
-            expect(mockResponse.json).toHaveBeenCalledWith({
-                error: "Token is missing",
-            });
-            expect(mockNext).not.toHaveBeenCalled();
-        });
-
         it("devrait retourner 401 si AuthService.verifyToken lance une erreur", async () => {
             const token = "invalid_or_expired_token";
-            mockRequest.cookies = { auth: `Bearer ${token}` };
+            mockRequest.cookies = { auth: `${token}` };
             mockAuthService.verifyToken.mockRejectedValue(
                 new AppError("Invalid or expired token", 401),
             );
@@ -116,7 +99,7 @@ describe("AuthMiddleware", () => {
 
         it("devrait retourner 401 si le jeton est révoqué", async () => {
             const token = "revoked_token";
-            mockRequest.cookies = { auth: `Bearer ${token}` };
+            mockRequest.cookies = { auth: `${token}` };
             mockAuthService.verifyToken.mockResolvedValue(decodedPayload);
             mockAuthService.verifyRevocation.mockResolvedValue(true);
 

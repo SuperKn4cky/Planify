@@ -81,7 +81,7 @@ describe("Parcours Connexion (Login)", () => {
             expect(response?.statusCode).to.eq(200);
             const setCookie = String(response?.headers?.["set-cookie"] ?? "");
             expect(setCookie).to.include("HttpOnly");
-            expect(setCookie).to.include("SameSite=Lax");
+            expect(setCookie).to.include("SameSite=Strict");
         });
 
         cy.request("GET", "/api/users/me").its("status").should("eq", 200);
