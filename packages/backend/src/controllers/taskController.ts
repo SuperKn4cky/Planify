@@ -164,7 +164,7 @@ export default class TaskController {
             );
 
             res.status(200).json({
-                data: { ...task.toPublic, permission },
+                data: { ...task.toPublic(), permission },
             });
         } catch (error) {
             next(error);
