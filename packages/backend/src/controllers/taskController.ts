@@ -158,10 +158,13 @@ export default class TaskController {
                 throw new AppError("Invalid task id", 400);
             }
 
-            const task = await this.taskService.getTaskByID(id, req.user.id);
+            const { task, permission } = await this.taskService.getTaskByID(
+                id,
+                req.user.id,
+            );
 
             res.status(200).json({
-                data: task.toPublic(),
+                data: { ...task.toPublic, permission },
             });
         } catch (error) {
             next(error);
