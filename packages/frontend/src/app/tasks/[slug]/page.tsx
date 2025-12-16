@@ -93,7 +93,7 @@ export default function TaskEditPage() {
                 setApiError(null);
 
                 try {
-                    await postJSON(`api/tasks/${id}/editing`);
+                    await postJSON(`/api/tasks/${id}/editing`);
                 } catch (err) {
                     if (err instanceof ApiError && err.status === 409) {
                         setApiError(
@@ -104,7 +104,7 @@ export default function TaskEditPage() {
                     console.error(err);
                 }
 
-                const res = await getJSON<{ data: Task }>(`api/tasks/${id}`);
+                const res = await getJSON<{ data: Task }>(`/api/tasks/${id}`);
 
                 if (aborted) return;
 
@@ -144,7 +144,7 @@ export default function TaskEditPage() {
                 }
             })();
             if (idCleanup) {
-                delJSON(`api/tasks/${idCleanup}/editing`).catch(() => {});
+                delJSON(`/api/tasks/${idCleanup}/editing`).catch(() => {});
             }
         };
     }, [params?.slug]);
@@ -178,7 +178,7 @@ export default function TaskEditPage() {
 
         try {
             setSaving(true);
-            await putJSON(`api/tasks/${id}`, {
+            await putJSON(`/api/tasks/${id}`, {
                 title,
                 description,
                 status,
@@ -187,7 +187,7 @@ export default function TaskEditPage() {
                 folder_id: folderId === "none" ? null : folderId,
             });
 
-            delJSON(`api/tasks/${id}/editing`).catch(() => {});
+            delJSON(`/api/tasks/${id}/editing`).catch(() => {});
 
             router.push("/dashboard");
         } catch (err) {

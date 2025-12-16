@@ -30,7 +30,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
         (async () => {
             try {
-                await getJSON("api/users/me");
+                await getJSON("/api/users/me");
                 if (!cancelled) setIsAuthenticated(true);
             } catch {
                 if (!cancelled) setIsAuthenticated(false);
@@ -73,7 +73,7 @@ export const AuthProvider = ({ children }: { children: ReactNode }) => {
 
     const deleteAccount = async () => {
         try {
-            await delJSON<{ message: string }>("api/users/me");
+            await delJSON<{ message: string }>("/api/users/me");
             setIsAuthenticated(false);
             router.push("/auth/login");
             router.refresh();

@@ -33,7 +33,7 @@ function buildApiUrl(path: string): string {
         return path;
     }
     if (path.startsWith("api")) {
-        return path;
+        return `/${path}`;
     }
     return `/api${path.startsWith("/") ? path : `/${path}`}`;
 }

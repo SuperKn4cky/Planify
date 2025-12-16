@@ -32,7 +32,7 @@ export default function AccountPage() {
         let cancelled = false;
         (async () => {
             try {
-                const me = await getJSON<Me>("api/users/me");
+                const me = await getJSON<Me>("/api/users/me");
                 if (cancelled) return;
                 setForm({
                     email: me.email ?? "",
@@ -72,7 +72,7 @@ export default function AccountPage() {
         }
         try {
             setLoadingSave(true);
-            await putJSON<UpdateRes>("api/users/me", parsed.data);
+            await putJSON<UpdateRes>("/api/users/me", parsed.data);
             setSuccess("Profil mis à jour.");
         } catch (err) {
             if (

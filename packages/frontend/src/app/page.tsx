@@ -10,7 +10,7 @@ export default function Home() {
     const [health, setHealth] = useState<HealthStatus>(null);
 
     useEffect(() => {
-        fetch("api/health")
+        fetch("/api/health")
             .then((res) => res.json())
             .then((data) => {
                 if (data.status === "OK") {
