@@ -6,6 +6,7 @@ import Image from "next/image";
 import { postJSON } from "@/lib/api";
 import { registerSchema } from "@/features/auth/validation";
 import { Eye, EyeOff } from "lucide-react";
+import { useAuth } from "@/contexts/AuthContext";
 import logo from "@/../public/planify.png";
 
 type RegisterResponse = {
@@ -24,6 +25,7 @@ export default function RegisterPage() {
     const [showConfirm, setShowConfirm] = useState(false);
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const { login } = useAuth();
 
     async function onSubmit(e: React.FormEvent) {
         e.preventDefault();
@@ -51,7 +53,7 @@ export default function RegisterPage() {
                 email,
                 password,
             });
-            router.push("/");
+            login();
         } catch (err: unknown) {
             if (
                 err instanceof Error &&
