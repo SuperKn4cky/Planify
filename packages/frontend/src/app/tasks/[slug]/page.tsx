@@ -3,10 +3,16 @@
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Calendar, ArrowLeft } from "lucide-react";
-import type { TaskPriority, TaskStatus } from "@/features/tasks/types";
+
+import type {
+    TaskPriority,
+    TaskStatus,
+    TaskPermission,
+} from "@/features/tasks/types";
 import { taskSchema } from "@/features/tasks/validation";
 import { ApiError, getJSON, postJSON, delJSON, putJSON } from "@/lib/api";
 import { listFolders } from "@/features/tasks/api";
+import ShareTaskDialog from "@/features/tasks/components/ShareTaskDialog";
 
 type Task = {
     id: number;
@@ -17,6 +23,8 @@ type Task = {
     priority: TaskPriority;
     folder_id: number | null;
     responsible_user: number | null;
+
+    permission?: TaskPermission;
 };
 
 type Folder = {
@@ -36,6 +44,7 @@ function parseSlug(slug: string): number {
 export default function TaskEditPage() {
     const params = useParams<{ slug: string }>();
     const router = useRouter();
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -48,6 +57,9 @@ export default function TaskEditPage() {
 
     const [folders, setFolders] = useState<Folder[]>([]);
     const [folderId, setFolderId] = useState<number | "none">("none");
+
+    const [permission, setPermission] = useState<TaskPermission>("read");
+    const [shareOpen, setShareOpen] = useState(false);
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>(
         {},
@@ -105,20 +117,25 @@ export default function TaskEditPage() {
                 }
 
                 const res = await getJSON<{ data: Task }>(`/api/tasks/${id}`);
-
                 if (aborted) return;
 
                 const t = res.data;
+
                 setTitle(t.title);
                 setDescription(t.description ?? "");
                 setStatus(t.status);
                 setPriority(t.priority);
+
                 setDuedate(
                     t.due_date
                         ? new Date(t.due_date).toISOString().slice(0, 10)
                         : "",
                 );
+
                 setFolderId(t.folder_id ?? "none");
+
+                if (t.permission) setPermission(t.permission);
+                else setPermission("read");
             } catch (err) {
                 if (aborted) return;
                 console.error(err);
@@ -178,6 +195,7 @@ export default function TaskEditPage() {
 
         try {
             setSaving(true);
+
             await putJSON(`/api/tasks/${id}`, {
                 title,
                 description,
@@ -188,15 +206,11 @@ export default function TaskEditPage() {
             });
 
             delJSON(`/api/tasks/${id}/editing`).catch(() => {});
-
             router.push("/dashboard");
         } catch (err) {
             console.error(err);
-            if (err instanceof ApiError) {
-                setApiError(err.message);
-            } else {
-                setApiError("Impossible de sauvegarder la tâche.");
-            }
+            if (err instanceof ApiError) setApiError(err.message);
+            else setApiError("Impossible de sauvegarder la tâche.");
         } finally {
             setSaving(false);
         }
@@ -210,6 +224,14 @@ export default function TaskEditPage() {
         );
     }
 
+    const taskId = (() => {
+        try {
+            return parseSlug(params.slug);
+        } catch {
+            return null;
+        }
+    })();
+
     return (
         <div className="mx-auto max-w-3xl py-8 text-[#0F172A]">
             {/* Bouton retour mobile */}
@@ -222,9 +244,31 @@ export default function TaskEditPage() {
                 <span>Retour au dashboard</span>
             </button>
 
-            <h1 className="text-2xl font-semibold">Modifier la tâche</h1>
+            <div className="flex items-center justify-between gap-3">
+                <h1 className="text-2xl font-semibold">Modifier la tâche</h1>
+
+                {taskId && permission === "owner" ? (
+                    <button
+                        type="button"
+                        onClick={() => setShareOpen(true)}
+                        className="h-10 rounded-lg border border-[#E5E7EB] px-4 text-[15px] text-[#0F172A] hover:bg-[#ECEFED]"
+                    >
+                        Partager
+                    </button>
+                ) : null}
+            </div>
+
+            {taskId ? (
+                <ShareTaskDialog
+                    open={shareOpen}
+                    taskId={taskId}
+                    onClose={() => setShareOpen(false)}
+                />
+            ) : null}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
+                {/* (tout ton formulaire inchangé) */}
+
                 <div>
                     <label
                         htmlFor="task-title"
