@@ -1,5 +1,5 @@
 import { getJSON, postJSON, delJSON, putJSON } from "@/lib/api";
-import type { Task, TaskStatus } from "./types";
+import type { Task, TaskStatus, TaskShareRow, Contact } from "./types";
 
 export async function createTask(input: {
     title: string;
@@ -11,14 +11,14 @@ export async function createTask(input: {
     responsibleUserId?: number | null;
 }) {
     const res = await postJSON<{ message: string; data: Task }>(
-        "api/tasks",
+        "/api/tasks",
         input,
     );
     return res.data;
 }
 
 export async function deleteTask(id: number) {
-    return delJSON<{ message: string }>(`api/tasks/${id}`);
+    return delJSON<{ message: string }>(`/api/tasks/${id}`);
 }
 
 export async function listTasks(params?: {
@@ -51,7 +51,7 @@ export async function listTasks(params?: {
     }
 
     const qs = search.toString();
-    const path = qs ? `api/tasks?${qs}` : "api/tasks";
+    const path = qs ? `/api/tasks?${qs}` : "/api/tasks";
 
     return getJSON<{
         items: Task[];
@@ -62,10 +62,12 @@ export async function listTasks(params?: {
     }>(path);
 }
 
+// Folder APIs
+
 export async function listFolders() {
     const res = await getJSON<{
         data: Array<{ id: number; name: string; permission: string }>;
-    }>("api/folders");
+    }>("/api/folders");
 
     return res.data;
 }
@@ -74,11 +76,36 @@ export async function createFolder(name: string) {
     const res = await postJSON<{
         message: string;
         data: { id: number; name: string; permission?: string };
-    }>("api/folders", { name });
+    }>("/api/folders", { name });
 
     return res.data;
 }
 
 export async function deleteFolder(id: number) {
-    return delJSON<{ message: string }>(`api/folders/${id}`);
+    return delJSON<{ message: string }>(`/api/folders/${id}`);
+}
+
+// Task Sharing APIs
+
+export async function listContacts(): Promise<Contact[]> {
+    return getJSON<Contact[]>("/api/contacts");
+}
+
+export async function listTaskShares(taskId: number): Promise<TaskShareRow[]> {
+    return getJSON<TaskShareRow[]>(`/api/tasks/${taskId}/shares`);
+}
+
+export async function shareTask(
+    taskId: number,
+    userId: number,
+    permission: "read" | "write",
+): Promise<void> {
+    await postJSON(`/api/tasks/${taskId}/shares`, { userId, permission });
+}
+
+export async function revokeTaskShare(
+    taskId: number,
+    userId: number,
+): Promise<void> {
+    await delJSON(`/api/tasks/${taskId}/shares/${userId}`);
 }
