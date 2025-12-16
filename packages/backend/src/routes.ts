@@ -184,19 +184,19 @@ export default class Routes {
 
         // Task Sharing routes
         this.app.get(
-            "tasks/:id/shares",
+            "/tasks/:id/shares",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskShareController.listShares.bind(this.taskShareController),
         );
 
         this.app.post(
-            "tasks/:id/shares",
+            "/tasks/:id/shares",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskShareController.addShare.bind(this.taskShareController),
         );
 
         this.app.delete(
-            "tasks/:id/shares/:userId",
+            "/tasks/:id/shares/:userId",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskShareController.deleteShare.bind(this.taskShareController),
         );
