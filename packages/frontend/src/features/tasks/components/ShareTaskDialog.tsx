@@ -17,6 +17,18 @@ type Props = {
     onClose: () => void;
 };
 
+function asArray<T>(value: unknown): T[] {
+    if (Array.isArray(value)) return value;
+    if (
+        value &&
+        typeof value === "object" &&
+        Array.isArray((value as any).data)
+    ) {
+        return (value as any).data;
+    }
+    return [];
+}
+
 export default function ShareTaskDialog({ open, taskId, onClose }: Props) {
     const [loading, setLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -35,10 +47,26 @@ export default function ShareTaskDialog({ open, taskId, onClose }: Props) {
         setLoading(true);
         setError(null);
         try {
-            const [c, s] = await Promise.all([
+            const [cRaw, sRaw] = await Promise.all([
                 listContacts(),
                 listTaskShares(taskId),
             ]);
+            const c = asArray<Contact>(cRaw);
+            const s = asArray<TaskShareRow>(sRaw);
+
+            if (c.length === 0 && !Array.isArray(cRaw)) {
+                throw new ApiError(
+                    "Format invalide: /contacts n'a pas renvoyé un tableau.",
+                    500,
+                );
+            }
+            if (s.length === 0 && !Array.isArray(sRaw)) {
+                throw new ApiError(
+                    "Format invalide: /tasks/:id/shares n'a pas renvoyé un tableau.",
+                    500,
+                );
+            }
+
             setContacts(c);
             setShares(s);
         } catch (e) {
