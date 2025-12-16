@@ -5,6 +5,7 @@ import {
     users,
     users_own_folders,
     users_own_tasks,
+    has_contact,
 } from "../db/schema.js";
 import AppError from "../middlewares/errorHandler.js";
 import { NewTask, Task, UpdateTask } from "../DTO/taskDTO.js";
@@ -289,7 +290,10 @@ export default class TaskService {
         return new Task(updated[0], true);
     }
 
-    public async getTaskByID(taskId: number, userId: number): Promise<Task> {
+    public async getTaskByID(
+        taskId: number,
+        userId: number,
+    ): Promise<{ task: Task; permission: "owner" | "read" | "write" }> {
         const existing = await this.db
             .select()
             .from(tasks)
@@ -300,9 +304,8 @@ export default class TaskService {
             throw new AppError("Task not found", 404);
         }
 
-        await this.ensureTaskReadAccess(taskId, userId);
-
-        return new Task(existing[0]);
+        const permission = await this.ensureTaskReadAccess(taskId, userId);
+        return { task: new Task(existing[0]), permission };
     }
 
     public async getTasksForUser(
@@ -458,6 +461,32 @@ export default class TaskService {
         }
     }
 
+    private async ensureIsContact(
+        ownerUserId: number,
+        targetUserId: number,
+    ): Promise<void> {
+        const rows = await this.db
+            .select()
+            .from(has_contact)
+            .where(
+                or(
+                    and(
+                        eq(has_contact.user_id_1, ownerUserId),
+                        eq(has_contact.user_id_2, targetUserId),
+                    ),
+                    and(
+                        eq(has_contact.user_id_2, ownerUserId),
+                        eq(has_contact.user_id_1, targetUserId),
+                    ),
+                ),
+            )
+            .limit(1);
+
+        if (rows.length === 0) {
+            throw new AppError("User is not in your contacts", 403);
+        }
+    }
+
     public async shareTask(
         taskId: number,
         ownerUserId: number,
@@ -470,6 +499,7 @@ export default class TaskService {
             throw new AppError("You cannot share a task with yourself", 400);
         }
 
+        await this.ensureIsContact(ownerUserId, targetUserId);
         await this.ensureShareTargetExists(targetUserId);
 
         const existing = await this.db
