@@ -30,6 +30,20 @@ export type TaskShareRow = {
     permission: "owner" | "read" | "write";
 };
 
+type FolderPermission = "read" | "write" | "owner";
+
+function maxFolderPerm(
+    a: FolderPermission,
+    b: FolderPermission,
+): FolderPermission {
+    const rank: Record<FolderPermission, number> = {
+        read: 1,
+        write: 2,
+        owner: 3,
+    };
+    return rank[a] >= rank[b] ? a : b;
+}
+
 export default class TaskService {
     private db: DB;
     private taskLockManager: InMemoryTaskLockManager;
@@ -37,6 +51,75 @@ export default class TaskService {
     public constructor(db: DB) {
         this.db = db;
         this.taskLockManager = new InMemoryTaskLockManager();
+    }
+
+    // Mappe les permissions de tâche aux permissions de dossier.
+
+    private mapTaskPermToFolderPerm(
+        taskPerm: "owner" | "read" | "write",
+    ): FolderPermission {
+        if (taskPerm === "write") return "write";
+        return "read";
+    }
+
+    private async upsertUserOwnFolder(
+        userId: number,
+        folderId: number,
+        perm: FolderPermission,
+    ): Promise<void> {
+        const existing = await this.db
+            .select({ permission: users_own_folders.permission })
+            .from(users_own_folders)
+            .where(
+                and(
+                    eq(users_own_folders.user_id, userId),
+                    eq(users_own_folders.folder_id, folderId),
+                ),
+            )
+            .limit(1);
+
+        const nextPerm = existing.length
+            ? maxFolderPerm(existing[0].permission as FolderPermission, perm)
+            : perm;
+
+        if (existing.length) {
+            await this.db
+                .update(users_own_folders)
+                .set({ permission: nextPerm })
+                .where(
+                    and(
+                        eq(users_own_folders.user_id, userId),
+                        eq(users_own_folders.folder_id, folderId),
+                    ),
+                );
+            return;
+        }
+
+        await this.db.insert(users_own_folders).values({
+            user_id: userId,
+            folder_id: folderId,
+            permission: nextPerm,
+        });
+    }
+
+    private async syncFolderAccessForAllTaskUsers(
+        taskId: number,
+        folderId: number,
+    ): Promise<void> {
+        const usersWithTask = await this.db
+            .select({
+                userid: users_own_tasks.user_id,
+                permission: users_own_tasks.permission,
+            })
+            .from(users_own_tasks)
+            .where(eq(users_own_tasks.task_id, taskId));
+
+        for (const row of usersWithTask) {
+            const folderPerm = this.mapTaskPermToFolderPerm(
+                row.permission as any,
+            );
+            await this.upsertUserOwnFolder(row.userid, folderId, folderPerm);
+        }
     }
 
     private async ensureFolderWriteAccess(
@@ -65,6 +148,8 @@ export default class TaskService {
             throw new AppError("Folder is read-only for this user", 403);
         }
     }
+
+    /// Validations
 
     private async ensureUserExists(userId: number): Promise<void> {
         const res = await this.db
@@ -151,6 +236,8 @@ export default class TaskService {
             throw new AppError("Task is currently being edited", 409);
         }
     }
+
+    // CRUD methods
 
     public async createTask(
         payload: NewTask,
@@ -244,6 +331,15 @@ export default class TaskService {
             throw new AppError("Task not found", 404);
         }
 
+        const currentFolderId = existing[0]?.folder_id ?? null;
+
+        if (
+            payload.folder_id !== undefined &&
+            payload.folder_id !== null &&
+            payload.folder_id !== currentFolderId
+        ) {
+            await this.ensureFolderWriteAccess(payload.folder_id, userId);
+        }
         await this.ensureTaskWriteAccess(taskId, userId);
         await this.ensureNotLockedByOther(taskId, userId);
 
@@ -285,6 +381,17 @@ export default class TaskService {
 
         if (updated.length === 0) {
             throw new AppError("Task not found", 404);
+        }
+
+        if (
+            payload.folder_id !== undefined &&
+            payload.folder_id !== null &&
+            payload.folder_id !== currentFolderId
+        ) {
+            await this.syncFolderAccessForAllTaskUsers(
+                taskId,
+                payload.folder_id,
+            );
         }
 
         return new Task(updated[0], true);
@@ -535,6 +642,19 @@ export default class TaskService {
             task_id: taskId,
             permission,
         });
+
+        const taskRow = await this.db
+            .select({ folderid: tasks.folder_id })
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+
+        if (taskRow.length && taskRow[0].folderid !== null) {
+            await this.syncFolderAccessForAllTaskUsers(
+                taskId,
+                taskRow[0].folderid,
+            );
+        }
     }
 
     public async listTaskShares(
