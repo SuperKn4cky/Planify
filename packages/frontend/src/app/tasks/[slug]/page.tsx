@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
 import { Calendar, ArrowLeft } from "lucide-react";
 
@@ -23,7 +23,6 @@ type Task = {
     priority: TaskPriority;
     folder_id: number | null;
     responsible_user: number | null;
-
     permission?: TaskPermission;
 };
 
@@ -45,6 +44,8 @@ export default function TaskEditPage() {
     const params = useParams<{ slug: string }>();
     const router = useRouter();
 
+    const lockHeldRef = useRef(false);
+
     const [loading, setLoading] = useState(true);
     const [saving, setSaving] = useState(false);
     const [apiError, setApiError] = useState<string | null>(null);
@@ -58,7 +59,9 @@ export default function TaskEditPage() {
     const [folders, setFolders] = useState<Folder[]>([]);
     const [folderId, setFolderId] = useState<number | "none">("none");
 
-    const [permission, setPermission] = useState<TaskPermission>("read");
+    const [permission, setPermission] = useState<TaskPermission>("owner");
+    const isReadOnly = permission === "read";
+
     const [shareOpen, setShareOpen] = useState(false);
 
     const [errors, setErrors] = useState<Record<string, string | undefined>>(
@@ -106,6 +109,7 @@ export default function TaskEditPage() {
 
                 try {
                     await postJSON(`/api/tasks/${id}/editing`);
+                    lockHeldRef.current = true;
                 } catch (err) {
                     if (err instanceof ApiError && err.status === 409) {
                         setApiError(
@@ -113,6 +117,7 @@ export default function TaskEditPage() {
                         );
                         return;
                     }
+                    // Si read-only, le backend peut refuser le lock : on log, puis on continue le GET.
                     console.error(err);
                 }
 
@@ -131,11 +136,17 @@ export default function TaskEditPage() {
                         ? new Date(t.due_date).toISOString().slice(0, 10)
                         : "",
                 );
-
                 setFolderId(t.folder_id ?? "none");
 
-                if (t.permission) setPermission(t.permission);
-                else setPermission("read");
+                // Permission (si non fournie, on considère owner par défaut)
+                const p = (t.permission ?? "owner") as TaskPermission;
+                setPermission(p);
+
+                // Si read-only, on ne garde pas un lock d'édition (et on n'en a pas besoin).
+                if (p === "read" && lockHeldRef.current) {
+                    delJSON(`/api/tasks/${id}/editing`).catch(() => {});
+                    lockHeldRef.current = false;
+                }
             } catch (err) {
                 if (aborted) return;
                 console.error(err);
@@ -153,6 +164,7 @@ export default function TaskEditPage() {
 
         return () => {
             aborted = true;
+
             const idCleanup = (() => {
                 try {
                     return parseSlug(params.slug);
@@ -160,14 +172,20 @@ export default function TaskEditPage() {
                     return null;
                 }
             })();
-            if (idCleanup) {
+
+            if (idCleanup && lockHeldRef.current) {
                 delJSON(`/api/tasks/${idCleanup}/editing`).catch(() => {});
+                lockHeldRef.current = false;
             }
         };
     }, [params?.slug]);
 
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
+
+        // Mode lecture seule: aucun PUT ne doit partir.
+        if (isReadOnly) return;
+
         setApiError(null);
         setErrors({});
 
@@ -205,7 +223,11 @@ export default function TaskEditPage() {
                 folder_id: folderId === "none" ? null : folderId,
             });
 
-            delJSON(`/api/tasks/${id}/editing`).catch(() => {});
+            if (lockHeldRef.current) {
+                delJSON(`/api/tasks/${id}/editing`).catch(() => {});
+                lockHeldRef.current = false;
+            }
+
             router.push("/dashboard");
         } catch (err) {
             console.error(err);
@@ -245,7 +267,9 @@ export default function TaskEditPage() {
             </button>
 
             <div className="flex items-center justify-between gap-3">
-                <h1 className="text-2xl font-semibold">Modifier la tâche</h1>
+                <h1 className="text-2xl font-semibold">
+                    {isReadOnly ? "Voir la tâche" : "Modifier la tâche"}
+                </h1>
 
                 {taskId && permission === "owner" ? (
                     <button
@@ -267,8 +291,6 @@ export default function TaskEditPage() {
             ) : null}
 
             <form onSubmit={handleSubmit} className="mt-6 space-y-6">
-                {/* (tout ton formulaire inchangé) */}
-
                 <div>
                     <label
                         htmlFor="task-title"
@@ -280,14 +302,15 @@ export default function TaskEditPage() {
                         id="task-title"
                         type="text"
                         value={title}
+                        disabled={isReadOnly}
                         onChange={(e) => setTitle(e.target.value)}
-                        className="mt-1 h-11 w-full rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                        className="mt-1 h-11 w-full rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3] disabled:bg-[#F3F4F6]"
                     />
-                    {errors.title && (
+                    {!isReadOnly && errors.title ? (
                         <p className="mt-1 text-sm text-red-600">
                             {errors.title}
                         </p>
-                    )}
+                    ) : null}
                 </div>
 
                 <div>
@@ -301,14 +324,15 @@ export default function TaskEditPage() {
                         id="task-description"
                         rows={3}
                         value={description}
+                        disabled={isReadOnly}
                         onChange={(e) => setDescription(e.target.value)}
-                        className="mt-1 w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                        className="mt-1 w-full rounded-lg border border-[#E5E7EB] px-3 py-2 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3] disabled:bg-[#F3F4F6]"
                     />
-                    {errors.description && (
+                    {!isReadOnly && errors.description ? (
                         <p className="mt-1 text-sm text-red-600">
                             {errors.description}
                         </p>
-                    )}
+                    ) : null}
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
@@ -322,10 +346,11 @@ export default function TaskEditPage() {
                         <select
                             id="task-status"
                             value={status}
+                            disabled={isReadOnly}
                             onChange={(e) =>
                                 setStatus(e.target.value as TaskStatus)
                             }
-                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px]"
+                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px] disabled:bg-[#F3F4F6]"
                         >
                             <option value="todo">À faire</option>
                             <option value="doing">En cours</option>
@@ -343,12 +368,13 @@ export default function TaskEditPage() {
                         <select
                             id="task-priority"
                             value={priority}
+                            disabled={isReadOnly}
                             onChange={(e) =>
                                 setPriority(
                                     Number(e.target.value) as TaskPriority,
                                 )
                             }
-                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px]"
+                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px] disabled:bg-[#F3F4F6]"
                         >
                             <option value={1}>Faible</option>
                             <option value={2}>Moyenne</option>
@@ -368,11 +394,12 @@ export default function TaskEditPage() {
                             value={
                                 folderId === "none" ? "none" : String(folderId)
                             }
+                            disabled={isReadOnly}
                             onChange={(e) => {
                                 const v = e.target.value;
                                 setFolderId(v === "none" ? "none" : Number(v));
                             }}
-                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px]"
+                            className="mt-1 h-10 w-full rounded-lg border border-[#E5E7EB] bg-white px-3 text-[15px] disabled:bg-[#F3F4F6]"
                         >
                             <option value="none">Aucun dossier</option>
                             {folders.map((f) => (
@@ -397,37 +424,50 @@ export default function TaskEditPage() {
                             id="task-due-date"
                             type="date"
                             value={duedate}
+                            disabled={isReadOnly}
                             onChange={(e) => setDuedate(e.target.value)}
-                            className="h-10 flex-1 rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                            className="h-10 flex-1 rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3] disabled:bg-[#F3F4F6]"
                         />
                     </div>
-                    {errors.due_date && (
+                    {!isReadOnly && errors.due_date ? (
                         <p className="mt-1 text-sm text-red-600">
                             {errors.due_date}
                         </p>
-                    )}
+                    ) : null}
                 </div>
 
-                {apiError && (
+                {apiError ? (
                     <p className="mt-2 text-sm text-red-600">{apiError}</p>
-                )}
+                ) : null}
 
-                <div className="mt-5 flex items-center justify-end gap-3">
-                    <button
-                        type="button"
-                        onClick={() => router.push("/dashboard")}
-                        className="h-10 rounded-lg border border-[#E5E7EB] px-4 text-[15px] text-[#0F172A] hover:bg-[#ECEFED]"
-                    >
-                        Annuler
-                    </button>
-                    <button
-                        type="submit"
-                        disabled={saving}
-                        className="h-10 rounded-lg bg-[#2563EB] px-4 text-[15px] font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-50"
-                    >
-                        {saving ? "Enregistrement…" : "Enregistrer"}
-                    </button>
-                </div>
+                {isReadOnly ? (
+                    <div className="mt-5 flex items-center justify-end">
+                        <button
+                            type="button"
+                            onClick={() => router.push("/dashboard")}
+                            className="h-10 rounded-lg border border-[#E5E7EB] px-4 text-[15px] text-[#0F172A] hover:bg-[#ECEFED]"
+                        >
+                            Retour
+                        </button>
+                    </div>
+                ) : (
+                    <div className="mt-5 flex items-center justify-end gap-3">
+                        <button
+                            type="button"
+                            onClick={() => router.push("/dashboard")}
+                            className="h-10 rounded-lg border border-[#E5E7EB] px-4 text-[15px] text-[#0F172A] hover:bg-[#ECEFED]"
+                        >
+                            Annuler
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={saving}
+                            className="h-10 rounded-lg bg-[#2563EB] px-4 text-[15px] font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-50"
+                        >
+                            {saving ? "Enregistrement…" : "Enregistrer"}
+                        </button>
+                    </div>
+                )}
             </form>
         </div>
     );

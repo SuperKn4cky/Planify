@@ -45,6 +45,9 @@ export default function TaskItem({ task, onDelete }: Props) {
 
     const editHref = `/tasks/${slugifyTitle(task.id, task.title)}`;
 
+    const isReadOnly = task.permission === "read";
+    const editLabel = isReadOnly ? "Voir la tâche" : "Modifier";
+
     return (
         <div className="border-b border-[#E5E7EB] py-5">
             <div className="flex items-start justify-between gap-4 px-5">
@@ -109,19 +112,21 @@ export default function TaskItem({ task, onDelete }: Props) {
                                     className="block w-full px-4 py-2 text-left text-14px text-[#0F172A] hover:bg-[#F3F4F6]"
                                     role="menuitem"
                                 >
-                                    Modifier
+                                    {editLabel}
                                 </Link>
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        setOpenDelete(true);
-                                        setMenuOpen(false);
-                                    }}
-                                    className="block w-full px-4 py-2 text-left text-14px text-[#DC2626] hover:bg-[#F3F4F6]"
-                                    role="menuitem"
-                                >
-                                    Supprimer
-                                </button>
+                                {!isReadOnly ? (
+                                    <button
+                                        type="button"
+                                        onClick={() => {
+                                            setOpenDelete(true);
+                                            setMenuOpen(false);
+                                        }}
+                                        className="block w-full px-4 py-2 text-left text-[14px] text-[#DC2626] hover:bg-[#F3F4F6]"
+                                        role="menuitem"
+                                    >
+                                        Supprimer
+                                    </button>
+                                ) : null}
                             </div>
                         </div>
                     ) : null}
