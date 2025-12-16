@@ -11,6 +11,7 @@ import FolderController from "./controllers/folderController.js";
 import FolderService from "./services/folderService.js";
 import ContactService from "./services/contactService.js";
 import ContactController from "./controllers/contactController.js";
+import TaskShareController from "./controllers/taskShareController.js";
 
 export default class Routes {
     private app: express.Application;
@@ -27,6 +28,7 @@ export default class Routes {
 
     private taskService: TaskService;
     private taskController: TaskController;
+    private taskShareController: TaskShareController;
 
     private folderService: FolderService;
     private folderController: FolderController;
@@ -55,11 +57,16 @@ export default class Routes {
 
         this.taskService = new TaskService(this.db);
         this.taskController = new TaskController(this.taskService);
+        this.taskShareController = new TaskShareController(this.taskService);
 
         this.folderService = new FolderService(this.db);
         this.folderController = new FolderController(this.folderService);
 
-        this.contactService = new ContactService(db, this.mailService, this.authService);
+        this.contactService = new ContactService(
+            db,
+            this.mailService,
+            this.authService,
+        );
         this.contactController = new ContactController(this.contactService);
     }
 
@@ -174,6 +181,25 @@ export default class Routes {
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.taskController.deleteTask.bind(this.taskController),
         );
+
+        // Task Sharing routes
+        this.app.get(
+            "tasks/:id/shares",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskShareController.listShares.bind(this.taskShareController),
+        );
+
+        this.app.post(
+            "tasks/:id/shares",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskShareController.addShare.bind(this.taskShareController),
+        );
+
+        this.app.delete(
+            "tasks/:id/shares/:userId",
+            this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
+            this.taskShareController.deleteShare.bind(this.taskShareController),
+        );
     }
 
     private foldersRoutes(): void {
@@ -202,7 +228,7 @@ export default class Routes {
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
             this.contactController.listContacts.bind(this.contactController),
         );
-        
+
         this.app.post(
             "/contacts",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
@@ -212,7 +238,9 @@ export default class Routes {
         this.app.post(
             "/contacts/accept",
             this.authMiddleware.isAuthenticated.bind(this.authMiddleware),
-            this.contactController.acceptInvitation.bind(this.contactController),
+            this.contactController.acceptInvitation.bind(
+                this.contactController,
+            ),
         );
 
         this.app.delete(

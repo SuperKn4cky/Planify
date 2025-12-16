@@ -19,6 +19,16 @@ type TaskListFilters = {
     dueDate: "all" | "overdue" | "today" | "week" | "month" | "none";
 };
 
+type SharePermission = "read" | "write";
+
+export type TaskShareRow = {
+    id: number;
+    email: string;
+    first_name: string;
+    last_name: string;
+    permission: "owner" | "read" | "write";
+};
+
 export default class TaskService {
     private db: DB;
     private taskLockManager: InMemoryTaskLockManager;
@@ -86,6 +96,38 @@ export default class TaskService {
         const perm = res[0].permission;
         if (perm === "read") {
             throw new AppError("Task is read-only for this user", 403);
+        }
+    }
+
+    private async ensureTaskReadAccess(
+        taskId: number,
+        userId: number,
+    ): Promise<"owner" | "read" | "write"> {
+        const res = await this.db
+            .select({ permission: users_own_tasks.permission })
+            .from(users_own_tasks)
+            .where(
+                and(
+                    eq(users_own_tasks.task_id, taskId),
+                    eq(users_own_tasks.user_id, userId),
+                ),
+            )
+            .limit(1);
+
+        if (res.length === 0) {
+            throw new AppError("You do not have permission on this task", 403);
+        }
+
+        return res[0].permission;
+    }
+
+    private async ensureTaskOwnerAccess(
+        taskId: number,
+        userId: number,
+    ): Promise<void> {
+        const perm = await this.ensureTaskReadAccess(taskId, userId);
+        if (perm !== "owner") {
+            throw new AppError("Only the owner can manage collaboration", 403);
         }
     }
 
@@ -258,7 +300,7 @@ export default class TaskService {
             throw new AppError("Task not found", 404);
         }
 
-        await this.ensureTaskWriteAccess(taskId, userId);
+        await this.ensureTaskReadAccess(taskId, userId);
 
         return new Task(existing[0]);
     }
@@ -400,5 +442,129 @@ export default class TaskService {
         });
 
         return { items, total };
+    }
+
+    // Task sharing methods
+
+    private async ensureShareTargetExists(userId: number): Promise<void> {
+        const res = await this.db
+            .select({ id: users.id })
+            .from(users)
+            .where(eq(users.id, userId))
+            .limit(1);
+
+        if (res.length === 0) {
+            throw new AppError("User not found", 400);
+        }
+    }
+
+    public async shareTask(
+        taskId: number,
+        ownerUserId: number,
+        targetUserId: number,
+        permission: SharePermission,
+    ): Promise<void> {
+        await this.ensureTaskOwnerAccess(taskId, ownerUserId);
+
+        if (targetUserId === ownerUserId) {
+            throw new AppError("You cannot share a task with yourself", 400);
+        }
+
+        await this.ensureShareTargetExists(targetUserId);
+
+        const existing = await this.db
+            .select({ permission: users_own_tasks.permission })
+            .from(users_own_tasks)
+            .where(
+                and(
+                    eq(users_own_tasks.task_id, taskId),
+                    eq(users_own_tasks.user_id, targetUserId),
+                ),
+            )
+            .limit(1);
+
+        if (existing.length > 0 && existing[0].permission === "owner") {
+            throw new AppError("Cannot change owner permissions", 400);
+        }
+
+        if (existing.length > 0) {
+            await this.db
+                .update(users_own_tasks)
+                .set({ permission })
+                .where(
+                    and(
+                        eq(users_own_tasks.task_id, taskId),
+                        eq(users_own_tasks.user_id, targetUserId),
+                    ),
+                );
+            return;
+        }
+
+        await this.db.insert(users_own_tasks).values({
+            user_id: targetUserId,
+            task_id: taskId,
+            permission,
+        });
+    }
+
+    public async listTaskShares(
+        taskId: number,
+        ownerUserId: number,
+    ): Promise<TaskShareRow[]> {
+        await this.ensureTaskOwnerAccess(taskId, ownerUserId);
+
+        const rows = await this.db
+            .select({
+                id: users.id,
+                email: users.email,
+                first_name: users.first_name,
+                last_name: users.last_name,
+                permission: users_own_tasks.permission,
+            })
+            .from(users_own_tasks)
+            .innerJoin(users, eq(users.id, users_own_tasks.user_id))
+            .where(eq(users_own_tasks.task_id, taskId));
+
+        return rows;
+    }
+
+    public async revokeTaskShare(
+        taskId: number,
+        ownerUserId: number,
+        targetUserId: number,
+    ): Promise<void> {
+        await this.ensureTaskOwnerAccess(taskId, ownerUserId);
+
+        if (targetUserId === ownerUserId) {
+            throw new AppError("You cannot revoke the owner", 400);
+        }
+
+        const existing = await this.db
+            .select({ permission: users_own_tasks.permission })
+            .from(users_own_tasks)
+            .where(
+                and(
+                    eq(users_own_tasks.task_id, taskId),
+                    eq(users_own_tasks.user_id, targetUserId),
+                ),
+            )
+            .limit(1);
+
+        if (existing.length === 0) {
+            throw new AppError("Share not found", 404);
+        }
+
+        if (existing[0].permission === "owner") {
+            throw new AppError("You cannot revoke the owner", 400);
+        }
+
+        await this.db
+            .delete(users_own_tasks)
+            .where(
+                and(
+                    eq(users_own_tasks.task_id, taskId),
+                    eq(users_own_tasks.user_id, targetUserId),
+                ),
+            );
     }
 }
