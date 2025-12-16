@@ -1,6 +1,6 @@
 import request from "supertest";
 import { eq } from "drizzle-orm";
-import { users } from "../../src/db/schema.js";
+import { users, has_contact } from "../../src/db/schema.js";
 
 async function getUserIdByEmail(email: string): Promise<number> {
     const rows = await global.db
@@ -14,6 +14,13 @@ async function getUserIdByEmail(email: string): Promise<number> {
     }
 
     return rows[0].id;
+}
+
+async function makeContacts(userAId: number, userBId: number) {
+    const user_id_1 = Math.min(userAId, userBId);
+    const user_id_2 = Math.max(userAId, userBId);
+
+    await global.db.insert(has_contact).values({ user_id_1, user_id_2 });
 }
 
 describe("Task shares - permissions", () => {
@@ -33,7 +40,10 @@ describe("Task shares - permissions", () => {
             .expect(201);
         const sharedCookie = regShared.headers["set-cookie"];
 
+        const ownerUserId = await getUserIdByEmail(owner.email);
         const sharedUserId = await getUserIdByEmail(shared.email);
+
+        await makeContacts(ownerUserId, sharedUserId);
 
         const created = await request(global.app)
             .post("/tasks")
@@ -84,7 +94,10 @@ describe("Task shares - permissions", () => {
             .expect(201);
         const sharedCookie = regShared.headers["set-cookie"];
 
+        const ownerUserId = await getUserIdByEmail(owner.email);
         const sharedUserId = await getUserIdByEmail(shared.email);
+
+        await makeContacts(ownerUserId, sharedUserId);
 
         const created = await request(global.app)
             .post("/tasks")
@@ -136,7 +149,10 @@ describe("Task shares - permissions", () => {
             .expect(201);
         const writerCookie = regWriter.headers["set-cookie"];
 
+        const ownerUserId = await getUserIdByEmail(owner.email);
         const writerUserId = await getUserIdByEmail(writer.email);
+
+        await makeContacts(ownerUserId, writerUserId);
 
         const created = await request(global.app)
             .post("/tasks")

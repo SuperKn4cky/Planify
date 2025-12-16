@@ -5,6 +5,7 @@ import {
     users_own_tasks,
     folders,
     users_own_folders,
+    has_contact,
 } from "../src/db/schema.js";
 
 beforeAll(async () => {
@@ -23,6 +24,7 @@ beforeAll(async () => {
     await global.db.delete(users_own_folders);
     await global.db.delete(folders);
     await global.db.delete(users);
+    await global.db.delete(has_contact);
 
     global.__INITED__ = true;
 });
