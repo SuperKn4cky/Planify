@@ -5,248 +5,237 @@ import { getJSON, postJSON, delJSON } from "@/lib/api";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 
 type Contact = {
-  id: number;
-  email: string;
-  first_name: string | null;
-  last_name: string | null;
+    id: number;
+    email: string;
+    first_name: string | null;
+    last_name: string | null;
 };
 
 export default function ContactsPage() {
-  const [contacts, setContacts] = useState<Contact[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
+    const [contacts, setContacts] = useState<Contact[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
 
-  const [email, setEmail] = useState("");
-  const [inviteMessage, setInviteMessage] = useState<string | null>(null);
-  const [inviteLoading, setInviteLoading] = useState(false);
+    const [email, setEmail] = useState("");
+    const [inviteMessage, setInviteMessage] = useState<string | null>(null);
+    const [inviteLoading, setInviteLoading] = useState(false);
 
-  const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
-  const [contactToDelete, setContactToDelete] = useState<Contact | null>(null);
+    const [openDeleteDialog, setOpenDeleteDialog] = useState(false);
+    const [contactToDelete, setContactToDelete] = useState<Contact | null>(
+        null,
+    );
 
-  useEffect(() => {
-    let aborted = false;
+    useEffect(() => {
+        let aborted = false;
 
-    async function loadContacts() {
-      setLoading(true);
-      setError(null);
-      try {
-        const data = await getJSON<Contact[]>("api/contacts");
-        if (!aborted) {
-          setContacts(data);
+        async function loadContacts() {
+            setLoading(true);
+            setError(null);
+
+            try {
+                const data = await getJSON<Contact[]>("/api/contacts");
+                if (!aborted) setContacts(data);
+            } catch (err) {
+                if (!aborted) {
+                    console.error(err);
+                    setError("Impossible de charger les contacts.");
+                }
+            } finally {
+                if (!aborted) setLoading(false);
+            }
         }
-      } catch (err) {
-        if (!aborted) {
-          console.error(err);
-          setError("Impossible de charger les contacts.");
+
+        loadContacts();
+        return () => {
+            aborted = true;
+        };
+    }, []);
+
+    async function handleSendInvitation(e: React.FormEvent) {
+        e.preventDefault();
+        setInviteMessage(null);
+        setError(null);
+
+        const trimmed = email.trim();
+        if (!trimmed) {
+            setError("L’email du contact est requis.");
+            return;
         }
-      } finally {
-        if (!aborted) {
-          setLoading(false);
+
+        setInviteLoading(true);
+        try {
+            await postJSON<{ message: string }>("/api/contacts", {
+                email: trimmed,
+            });
+            setInviteMessage(
+                "Invitation envoyée. Le contact apparaîtra une fois l’invitation acceptée.",
+            );
+            setEmail("");
+        } catch (err: any) {
+            console.error(err);
+            const msg =
+                typeof err?.message === "string"
+                    ? err.message
+                    : "Impossible d’envoyer l’invitation.";
+            setError(msg);
+        } finally {
+            setInviteLoading(false);
         }
-      }
     }
 
-    loadContacts();
-
-    return () => {
-      aborted = true;
-    };
-  }, []);
-
-  async function handleSendInvitation(e: React.FormEvent) {
-    e.preventDefault();
-    setInviteMessage(null);
-    setError(null);
-
-    const trimmed = email.trim();
-    if (!trimmed) {
-      setError("L'email du contact est requis.");
-      return;
+    function askDeleteContact(contact: Contact) {
+        setContactToDelete(contact);
+        setOpenDeleteDialog(true);
     }
 
-    setInviteLoading(true);
-    try {
-      await postJSON<{ message: string }>("api/contacts", {
-        email: trimmed,
-      });
-      setInviteMessage(
-        "Invitation envoyée. Le contact apparaîtra une fois l’invitation acceptée.",
-      );
-      setEmail("");
-    } catch (err: any) {
-      console.error(err);
-      const msg =
-        typeof err?.message === "string"
-          ? err.message
-          : "Impossible d'envoyer l'invitation.";
-      setError(msg);
-    } finally {
-      setInviteLoading(false);
-    }
-  }
+    async function confirmDeleteContact() {
+        if (!contactToDelete) {
+            setOpenDeleteDialog(false);
+            return;
+        }
 
-  function askDeleteContact(contact: Contact) {
-    setContactToDelete(contact);
-    setOpenDeleteDialog(true);
-  }
-
-  async function confirmDeleteContact() {
-    if (!contactToDelete) {
-      setOpenDeleteDialog(false);
-      return;
+        setError(null);
+        try {
+            await delJSON<{ message: string }>(
+                `/api/contacts/${contactToDelete.id}`,
+            );
+            setContacts((cur) =>
+                cur.filter((c) => c.id !== contactToDelete.id),
+            );
+        } catch (err) {
+            console.error(err);
+            setError("Impossible de supprimer ce contact.");
+        } finally {
+            setOpenDeleteDialog(false);
+            setContactToDelete(null);
+        }
     }
 
-    setError(null);
-    try {
-      await delJSON<{ message: string }>(
-        `api/contacts/${contactToDelete.id}`,
-      );
-      setContacts((cur) => cur.filter((c) => c.id !== contactToDelete.id));
-    } catch (err) {
-      console.error(err);
-      setError("Impossible de supprimer ce contact.");
-    } finally {
-      setOpenDeleteDialog(false);
-      setContactToDelete(null);
-    }
-  }
-
-  return (
-    <main className="min-h-screen">
-      <div className="mx-auto max-w-4xl px-4 py-8">
-        <header className="mb-8">
-          <h1 className="text-2xl font-semibold text-slate-900">
-            Mes contacts
-          </h1>
-          <p className="mt-1 text-sm text-slate-600">
-            Consultez vos contacts et envoyez de nouvelles invitations.
-          </p>
-        </header>
-
-        <section className="mb-8 rounded-xl bg-white p-4 shadow-sm border border-slate-200">
-          <h2 className="text-sm font-medium text-slate-800 mb-3">
-            Ajouter un contact
-          </h2>
-
-          <form
-            onSubmit={handleSendInvitation}
-            className="flex flex-col gap-3 sm:flex-row sm:items-center"
-          >
-            <input
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="email@exemple.com"
-              className="flex-1 rounded-lg border border-slate-300 px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500"
-            />
-            <button
-              type="submit"
-              disabled={inviteLoading}
-              className="inline-flex items-center justify-center rounded-lg bg-indigo-600 px-4 py-2 text-sm font-medium text-white hover:bg-indigo-700 disabled:opacity-60"
-            >
-              {inviteLoading ? "Envoi..." : "Envoyer une invitation"}
-            </button>
-          </form>
-
-          {inviteMessage && (
-            <p className="mt-3 text-sm text-emerald-700 bg-emerald-50 border border-emerald-200 rounded-lg px-3 py-2">
-              {inviteMessage}
-            </p>
-          )}
-        </section>
-
-        <section className="rounded-xl bg-white p-4 shadow-sm border border-slate-200">
-          <h2 className="text-sm font-medium text-slate-800 mb-3">
-            Liste de vos contacts
-          </h2>
-
-          {error && (
-            <p className="mb-3 text-sm text-red-700 bg-red-50 border border-red-200 rounded-lg px-3 py-2">
-              {error}
-            </p>
-          )}
-
-          {loading ? (
-            <p className="text-sm text-slate-600">Chargement des contacts...</p>
-          ) : contacts.length === 0 ? (
-            <p className="text-sm text-slate-600">
-              Vous n&apos;avez encore aucun contact.
-            </p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full text-sm">
-                <thead>
-                  <tr className="border-b border-slate-200 bg-slate-50">
-                    <th className="px-3 py-2 text-left font-medium text-slate-700">
-                      Nom
-                    </th>
-                    <th className="px-3 py-2 text-left font-medium text-slate-700">
-                      Email
-                    </th>
-                    <th className="px-3 py-2 text-right font-medium text-slate-700">
-                      Actions
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {contacts.map((contact) => {
-                    const fullName =
-                      [contact.first_name, contact.last_name]
-                        .filter(Boolean)
-                        .join(" ") || "—";
-
-                    return (
-                      <tr
-                        key={contact.id}
-                        className="border-b border-slate-100 last:border-0"
-                      >
-                        <td className="px-3 py-2 text-slate-900">
-                          {fullName}
-                        </td>
-                        <td className="px-3 py-2 text-slate-700">
-                          {contact.email}
-                        </td>
-                        <td className="px-3 py-2 text-right">
-                          <button
-                            type="button"
-                            onClick={() => askDeleteContact(contact)}
-                            className="inline-flex items-center rounded-lg border border-red-200 px-3 py-1 text-xs font-medium text-red-700 hover:bg-red-50"
-                          >
-                            Supprimer
-                          </button>
-                        </td>
-                      </tr>
-                    );
-                  })}
-                </tbody>
-              </table>
+    return (
+        <>
+            {/* Header style dashboard */}
+            <div className="sticky top-0 z-10 border-b border-[#E5E7EB] bg-white">
+                <div className="mx-auto flex max-w-5xl flex-col items-center gap-4 py-4 text-[#0F172A] sm:flex-row sm:items-center sm:justify-between">
+                    <div className="flex flex-col gap-1 text-center sm:text-left">
+                        <h1 className="text-2xl font-semibold">Contacts</h1>
+                        <p className="text-[14px] text-[#6B7280]">
+                            Gérez vos contacts et envoyez des invitations.
+                        </p>
+                    </div>
+                </div>
             </div>
-          )}
-        </section>
-      </div>
 
-      <ConfirmDialog
-        open={openDeleteDialog}
-        onClose={() => {
-          setOpenDeleteDialog(false);
-          setContactToDelete(null);
-        }}
-        onConfirm={confirmDeleteContact}
-        title="Supprimer ce contact ?"
-        description={
-          contactToDelete
-            ? `Voulez-vous vraiment supprimer ${[
-                contactToDelete.first_name,
-                contactToDelete.last_name,
-              ]
-                .filter(Boolean)
-                .join(" ") || contactToDelete.email} de vos contacts ?`
-            : undefined
-        }
-        confirmLabel="Supprimer"
-        cancelLabel="Annuler"
-        tone="danger"
-      />
-    </main>
-  );
+            <div className="mx-auto max-w-5xl text-[#0F172A]">
+                {/* Form (bouton toujours visible) */}
+                <div className="mt-6">
+                    <form
+                        onSubmit={handleSendInvitation}
+                        className="flex flex-col gap-3 sm:flex-row sm:items-center"
+                    >
+                        <input
+                            type="email"
+                            value={email}
+                            onChange={(e) => setEmail(e.target.value)}
+                            placeholder="email@exemple.com"
+                            className="h-11 w-full flex-1 rounded-lg border border-[#E5E7EB] px-3 text-base text-[#111827] focus:outline-none focus:ring-2 focus:ring-[#2D6AE3]"
+                        />
+
+                        <button
+                            type="submit"
+                            disabled={inviteLoading}
+                            className="inline-flex h-10 w-full shrink-0 items-center justify-center rounded-lg bg-[#2563EB] px-4 text-[15px] font-medium text-white hover:bg-[#1D4ED8] disabled:opacity-60 sm:w-auto"
+                        >
+                            {inviteLoading ? "Envoi..." : "Ajouter"}
+                        </button>
+                    </form>
+
+                    {inviteMessage ? (
+                        <div className="mt-3 rounded-lg border border-[#E5E7EB] bg-[#ECEFED] px-4 py-3 text-xs text-[#6B7280]">
+                            {inviteMessage}
+                        </div>
+                    ) : null}
+
+                    {error ? (
+                        <div className="mt-3 rounded-lg border border-red-200 bg-red-50 px-3 py-2 text-sm text-[#B91C1C]">
+                            {error}
+                        </div>
+                    ) : null}
+                </div>
+
+                {/* List (même pattern dashboard) */}
+                <div className="mt-6 rounded-xl border border-[#E5E7EB] bg-white">
+                    <div className="divide-y divide-[#E5E7EB]">
+                        {loading ? (
+                            <div className="p-6 text-[#6B7280]">
+                                Chargement des contacts...
+                            </div>
+                        ) : contacts.length === 0 ? (
+                            <div className="p-6 text-[#6B7280]">
+                                Aucun contact pour l’instant.
+                            </div>
+                        ) : (
+                            contacts.map((c) => {
+                                const fullName = [c.first_name, c.last_name]
+                                    .filter(Boolean)
+                                    .join(" ");
+
+                                return (
+                                    <div
+                                        key={c.id}
+                                        className="flex flex-col gap-3 px-5 py-5 sm:flex-row sm:items-center sm:justify-between"
+                                    >
+                                        <div className="min-w-0">
+                                            <div className="text-[15px] font-medium text-[#0F172A]">
+                                                {fullName || "—"}
+                                            </div>
+                                            <div className="mt-1 truncate text-[14px] text-[#6B7280]">
+                                                {c.email}
+                                            </div>
+                                        </div>
+
+                                        <div className="flex items-center justify-end">
+                                            <button
+                                                type="button"
+                                                onClick={() =>
+                                                    askDeleteContact(c)
+                                                }
+                                                className="inline-flex h-10 items-center justify-center rounded-lg bg-[#DC2626] px-4 text-[15px] font-medium text-white hover:bg-[#B91C1C]"
+                                            >
+                                                Supprimer
+                                            </button>
+                                        </div>
+                                    </div>
+                                );
+                            })
+                        )}
+                    </div>
+                </div>
+
+                <ConfirmDialog
+                    open={openDeleteDialog}
+                    onClose={() => {
+                        setOpenDeleteDialog(false);
+                        setContactToDelete(null);
+                    }}
+                    onConfirm={confirmDeleteContact}
+                    title="Supprimer ce contact ?"
+                    description={
+                        contactToDelete
+                            ? `Voulez-vous vraiment supprimer ${
+                                  [
+                                      contactToDelete.first_name,
+                                      contactToDelete.last_name,
+                                  ]
+                                      .filter(Boolean)
+                                      .join(" ") || contactToDelete.email
+                              } de vos contacts ?`
+                            : undefined
+                    }
+                    confirmLabel="Supprimer"
+                    cancelLabel="Annuler"
+                    tone="danger"
+                />
+            </div>
+        </>
+    );
 }
