@@ -123,7 +123,7 @@ export default function DashboardPage() {
             return;
         }
         const folder = folders.find((f) => f.id === folderId);
-        if (!folder) {
+        if (!folder || folder.permission !== "owner") {
             setOpenDeleteFolder(false);
             return;
         }
@@ -292,7 +292,7 @@ export default function DashboardPage() {
                     </div>
 
                     {/* Bouton de suppression de dossier sous les filtres */}
-                    {selectedFolder && (
+                    {selectedFolder && selectedFolder.permission === "owner" ? (
                         <div className="mt-2">
                             <button
                                 type="button"
@@ -303,7 +303,7 @@ export default function DashboardPage() {
                                 {selectedFolder.name}
                             </button>
                         </div>
-                    )}
+                    ) : null}
                 </div>
 
                 {/* Liste */}

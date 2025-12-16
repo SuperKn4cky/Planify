@@ -122,6 +122,48 @@ export default class TaskService {
         }
     }
 
+    private async pruneUserOwnFolderIfUnused(
+        userId: number,
+        folderId: number,
+    ): Promise<void> {
+        const link = await this.db
+            .select({ permission: users_own_folders.permission })
+            .from(users_own_folders)
+            .where(
+                and(
+                    eq(users_own_folders.user_id, userId),
+                    eq(users_own_folders.folder_id, folderId),
+                ),
+            )
+            .limit(1);
+
+        if (link.length === 0) return;
+        if (link[0].permission === "owner") return;
+
+        const countRows = await this.db
+            .select({ count: sql<number>`COUNT(*)` })
+            .from(tasks)
+            .innerJoin(users_own_tasks, eq(users_own_tasks.task_id, tasks.id))
+            .where(
+                and(
+                    eq(users_own_tasks.user_id, userId),
+                    eq(tasks.folder_id, folderId),
+                ),
+            );
+
+        const count = Number(countRows[0]?.count ?? 0);
+        if (count === 0) {
+            await this.db
+                .delete(users_own_folders)
+                .where(
+                    and(
+                        eq(users_own_folders.user_id, userId),
+                        eq(users_own_folders.folder_id, folderId),
+                    ),
+                );
+        }
+    }
+
     private async ensureFolderWriteAccess(
         folderId: number,
         userId: number,
@@ -293,7 +335,7 @@ export default class TaskService {
 
     public async deleteTaskByID(taskId: number, userId: number): Promise<void> {
         const exists = await this.db
-            .select({ id: tasks.id })
+            .select({ id: tasks.id, folder_id: tasks.folder_id })
             .from(tasks)
             .where(eq(tasks.id, taskId))
             .limit(1);
@@ -305,12 +347,28 @@ export default class TaskService {
         await this.ensureTaskWriteAccess(taskId, userId);
         await this.ensureNotLockedByOther(taskId, userId);
 
+        // Get users with access before deleting
+        const usersWithTask = await this.db
+            .select({ userid: users_own_tasks.user_id })
+            .from(users_own_tasks)
+            .where(eq(users_own_tasks.task_id, taskId));
+
         const result = await this.db
             .delete(tasks)
             .where(eq(tasks.id, taskId))
             .returning();
         if (result.length === 0) {
             throw new AppError("Task not found", 404);
+        }
+
+        // Prune folder access if task had a folder
+        if (exists[0].folder_id !== null) {
+            for (const u of usersWithTask) {
+                await this.pruneUserOwnFolderIfUnused(
+                    u.userid,
+                    exists[0].folder_id,
+                );
+            }
         }
 
         this.taskLockManager.release(taskId, userId);
@@ -392,6 +450,21 @@ export default class TaskService {
                 taskId,
                 payload.folder_id,
             );
+        }
+
+        // Si on change (ou retire) le dossier, on prune l'ancien dossier
+        if (payload.folder_id !== undefined && currentFolderId !== null) {
+            const usersWithTask = await this.db
+                .select({ userid: users_own_tasks.user_id })
+                .from(users_own_tasks)
+                .where(eq(users_own_tasks.task_id, taskId));
+
+            for (const u of usersWithTask) {
+                await this.pruneUserOwnFolderIfUnused(
+                    u.userid,
+                    currentFolderId,
+                );
+            }
         }
 
         return new Task(updated[0], true);
@@ -716,5 +789,18 @@ export default class TaskService {
                     eq(users_own_tasks.user_id, targetUserId),
                 ),
             );
+
+        // Prune folder access if task has a folder
+        const task = await this.db
+            .select({ folder_id: tasks.folder_id })
+            .from(tasks)
+            .where(eq(tasks.id, taskId))
+            .limit(1);
+        if (task.length > 0 && task[0].folder_id !== null) {
+            await this.pruneUserOwnFolderIfUnused(
+                targetUserId,
+                task[0].folder_id,
+            );
+        }
     }
 }
