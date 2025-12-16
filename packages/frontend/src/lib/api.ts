@@ -44,6 +44,7 @@ function redirectToLoginIfNeeded(): void {
     }
     const pathname = window.location?.pathname ?? "";
     if (
+        pathname === "/" ||
         pathname.startsWith("/auth/login") ||
         pathname.startsWith("/auth/register")
     ) {
