@@ -104,59 +104,48 @@ export default function TaskEditPage() {
 
         async function loadTask() {
             try {
-                setLoading(true);
-                setApiError(null);
+            setLoading(true);
+            setApiError(null);
 
+            //Charger la tâche pour connaître la permission
+            const res = await getJSON<{ data: Task }>(`/api/tasks/${id}`);
+            if (aborted) return;
+
+            const t = res.data;
+            setTitle(t.title);
+            setDescription(t.description ?? "");
+            setStatus(t.status);
+            setPriority(t.priority);
+            setDuedate(t.due_date ? new Date(t.due_date).toISOString().slice(0, 10) : "");
+            setFolderId(t.folder_id ?? "none" as any);
+
+            const p = (t.permission ?? "owner") as TaskPermission;
+            setPermission(p);
+
+            //Si l'utilisateur peut écrire, on essaye de prendre le lock
+            if (p !== "read") {
                 try {
-                    await postJSON(`/api/tasks/${id}/editing`);
+                await postJSON(`/api/tasks/${id}/editing`);
+                if (!aborted) {
                     lockHeldRef.current = true;
+                }
                 } catch (err) {
-                    if (err instanceof ApiError && err.status === 409) {
-                        setApiError(
-                            "Cette tâche est en cours de modification par un autre utilisateur.",
-                        );
-                        return;
+                if (err instanceof ApiError && err.status === 409) {
+                    if (!aborted) {
+                    setApiError("Cette tache est en cours de modification par un autre utilisateur.");
                     }
-                    // Si read-only, le backend peut refuser le lock : on log, puis on continue le GET.
-                    console.error(err);
+                    return;
                 }
-
-                const res = await getJSON<{ data: Task }>(`/api/tasks/${id}`);
-                if (aborted) return;
-
-                const t = res.data;
-
-                setTitle(t.title);
-                setDescription(t.description ?? "");
-                setStatus(t.status);
-                setPriority(t.priority);
-
-                setDuedate(
-                    t.due_date
-                        ? new Date(t.due_date).toISOString().slice(0, 10)
-                        : "",
-                );
-                setFolderId(t.folder_id ?? "none");
-
-                // Permission (si non fournie, on considère owner par défaut)
-                const p = (t.permission ?? "owner") as TaskPermission;
-                setPermission(p);
-
-                // Si read-only, on ne garde pas un lock d'édition (et on n'en a pas besoin).
-                if (p === "read" && lockHeldRef.current) {
-                    delJSON(`/api/tasks/${id}/editing`).catch(() => {});
-                    lockHeldRef.current = false;
-                }
-            } catch (err) {
-                if (aborted) return;
+                // autres erreurs de lock 
                 console.error(err);
-                setApiError(
-                    err instanceof ApiError
-                        ? err.message
-                        : "Impossible de charger la tâche.",
-                );
+                }
+            }
+            } catch (err) {
+            if (aborted) return;
+            console.error(err);
+            setApiError(err instanceof ApiError ? err.message : "Impossible de charger la tache.");
             } finally {
-                if (!aborted) setLoading(false);
+            if (!aborted) setLoading(false);
             }
         }
 
@@ -164,26 +153,26 @@ export default function TaskEditPage() {
 
         return () => {
             aborted = true;
-
             const idCleanup = (() => {
-                try {
-                    return parseSlug(params.slug);
-                } catch {
-                    return null;
-                }
+            try {
+                return parseSlug(params.slug);
+            } catch {
+                return null;
+            }
             })();
-
             if (idCleanup && lockHeldRef.current) {
-                delJSON(`/api/tasks/${idCleanup}/editing`).catch(() => {});
+            delJSON(`/api/tasks/${idCleanup}/editing`).catch(() => {
                 lockHeldRef.current = false;
+            });
             }
         };
     }, [params?.slug]);
 
+
     async function handleSubmit(e: React.FormEvent) {
         e.preventDefault();
 
-        // Mode lecture seule: aucun PUT ne doit partir.
+        //Mode lecture seule: aucun PUT ne doit partir.
         if (isReadOnly) return;
 
         setApiError(null);
