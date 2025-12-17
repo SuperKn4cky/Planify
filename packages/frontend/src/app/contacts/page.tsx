@@ -72,6 +72,10 @@ export default function ContactsPage() {
             );
             setEmail("");
         } catch (err: any) {
+            if (err?.status === 400 && typeof err?.message === "string" && err.message.includes("User is already in your contacts")) {
+                setError("Cet utilisateur fait déjà partie de vos contacts.");
+                return;
+            }
             console.error(err);
             const msg =
                 typeof err?.message === "string"
