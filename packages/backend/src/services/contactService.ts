@@ -90,6 +90,17 @@ export default class ContactService {
 
     const inviter = inviterArr[0];
 
+    const [u1, u2] = this.normalizePair(currentUserId, invitee.id);
+    const existing = await this.db
+      .select()
+      .from(has_contact)
+      .where(and(eq(has_contact.user_id_1, u1), eq(has_contact.user_id_2, u2)))
+      .limit(1);
+
+    if (existing.length > 0) {
+      throw new AppError("User is already in your contacts", 400);
+    }
+
     const payload: InvitePayload = {
       type: "contact-invite",
       inviter_id: currentUserId,
