@@ -1,10 +1,12 @@
 "use client";
 
+import Head from "next/head";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { CheckCircle2, ShieldCheck, Users, FolderKanban } from "lucide-react";
 
 type HealthStatus = "OK" | "FAIL" | null;
+
 
 export default function Home() {
     const [health, setHealth] = useState<HealthStatus>(null);
@@ -37,6 +39,15 @@ export default function Home() {
               : "bg-gray-50 text-gray-600 border-gray-200";
 
     return (
+        <>
+        <Head>
+            <title>Planify - Application de gestion de tâches collaborative auto-hébergeable</title>
+            <meta
+            name="description"
+            content="Organisez vos tâches, dossiers et projets en équipe avec Planify, une application web sécurisée, autohébergeable et prête pour la production."
+            />
+        </Head>
+
         <main className="w-full bg-white text-0F172A">
             <div className="mx-auto flex max-w-5xl flex-col gap-12 px-6 py-10 lg:flex-row lg:items-center">
                 {/* Colonne gauche : hero + CTA */}
@@ -192,5 +203,6 @@ export default function Home() {
                 </aside>
             </div>
         </main>
+        </>
     );
 }
